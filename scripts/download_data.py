@@ -71,7 +71,10 @@ def fetch_dane_gov_pl():
     con.close()
 
     if os.path.exists(EXCEL_PATH):
-        os.remove(EXCEL_PATH)
+        try:
+            os.remove(EXCEL_PATH)
+        except OSError:
+            pass
 
     print("SUKCES: Baza danych gotowa.")
 
