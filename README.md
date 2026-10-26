@@ -74,14 +74,14 @@ Wymagany: **Python 3.11+**
    pip install -r requirements.txt
    ```
 
-4. Pobierz i zaktualizuj bazę danych:
+4. Pobierz i zaktualizuj bazę danych (użyj Pythona 3.11):
    ```bash
-   python scripts/download_data.py
+   py -3.11 scripts/download_data.py
    ```
 
 5. Uruchom aplikację:
    ```bash
-   streamlit run src/app.py --server.port 8501
+   py -3.11 -m streamlit run src/app.py --server.port 8501
    ```
 ---
 
