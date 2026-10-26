@@ -1,5 +1,3 @@
-import subprocess
-import sys
 from pathlib import Path
 
 import pandas as pd
@@ -52,38 +50,21 @@ st.markdown('''
 
 def ensure_database():
     db_path = Path(DB_PATH)
-    if db_path.exists():
-        try:
-            import duckdb
+    if not db_path.exists():
+        return False
+    try:
+        import duckdb
 
-            con = duckdb.connect(str(db_path), read_only=True)
-            con.execute("SELECT 1").fetchone()
-            con.close()
-            return True
-        except Exception:
-            try:
-                db_path.unlink()
-            except OSError:
-                pass
-    project_root = Path(__file__).resolve().parent.parent
-    script = project_root / "scripts" / "download_data.py"
-    if script.exists():
+        con = duckdb.connect(str(db_path), read_only=True)
+        con.execute("SELECT 1").fetchone()
+        con.close()
+        return True
+    except Exception:
         try:
-            result = subprocess.run(
-                [sys.executable, str(script)],
-                cwd=str(project_root),
-                capture_output=True,
-                text=True,
-                errors="replace",
-                check=False,
-            )
-            if result.returncode != 0:
-                st.error(result.stderr or result.stdout or "Błąd generowania bazy.")
-                return False
-        except Exception as exc:
-            st.error(str(exc))
-            return False
-    return Path(DB_PATH).exists()
+            db_path.unlink()
+        except OSError:
+            pass
+        return False
 
 
 try:
