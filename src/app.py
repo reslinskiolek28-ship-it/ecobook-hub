@@ -1,4 +1,3 @@
-from pathlib import Path
 
 import pandas as pd
 import plotly.express as px
@@ -48,31 +47,10 @@ st.markdown('''
 </style>
 ''', unsafe_allow_html=True)
 
-def ensure_database():
-    db_path = Path(DB_PATH)
-    if not db_path.exists():
-        return False
-    try:
-        import duckdb
-
-        con = duckdb.connect(str(db_path), read_only=True)
-        con.execute("SELECT 1").fetchone()
-        con.close()
-        return True
-    except Exception:
-        try:
-            db_path.unlink()
-        except OSError:
-            pass
-        return False
-
-
 try:
-    if not ensure_database():
-        raise RuntimeError("database generation failed")
     con = get_connection()
 except Exception as e:
-    st.error(f"Brak bazy danych: {e}. Uruchom: python scripts/download_data.py (wymaga internetu).")
+    st.error(f"Brak bazy danych: {e}")
     st.stop()
 
 if 'page' not in st.session_state:
