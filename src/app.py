@@ -1,3 +1,7 @@
+import subprocess
+import sys
+from pathlib import Path
+
 import pandas as pd
 import plotly.express as px
 import streamlit as st
@@ -46,10 +50,37 @@ st.markdown('''
 </style>
 ''', unsafe_allow_html=True)
 
+def ensure_database():
+    db_path = Path(DB_PATH)
+    if db_path.exists():
+        try:
+            import duckdb
+
+            con = duckdb.connect(str(db_path), read_only=True)
+            con.execute("SELECT 1").fetchone()
+            con.close()
+            return True
+        except Exception:
+            try:
+                db_path.unlink()
+            except OSError:
+                pass
+    project_root = Path(__file__).resolve().parent.parent
+    script = project_root / "scripts" / "download_data.py"
+    if script.exists():
+        try:
+            subprocess.run([sys.executable, str(script)], cwd=str(project_root), check=False)
+        except Exception:
+            return False
+    return Path(DB_PATH).exists()
+
+
 try:
+    if not ensure_database():
+        raise RuntimeError("database generation failed")
     con = get_connection()
 except Exception:
-    st.error("Brak bazy danych. Wygeneruj ją skryptem ETL.")
+    st.error("Brak bazy danych. Uruchom: python scripts/download_data.py (wymaga internetu).")
     st.stop()
 
 if 'page' not in st.session_state:
