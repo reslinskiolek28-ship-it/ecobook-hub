@@ -71,8 +71,8 @@ try:
     if not ensure_database():
         raise RuntimeError("database generation failed")
     con = get_connection()
-except Exception:
-    st.error("Brak bazy danych. Uruchom: python scripts/download_data.py (wymaga internetu).")
+except Exception as e:
+    st.error(f"Brak bazy danych: {e}. Uruchom: python scripts/download_data.py (wymaga internetu).")
     st.stop()
 
 if 'page' not in st.session_state:
