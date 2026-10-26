@@ -6,7 +6,7 @@ import pandas as pd
 DB_PATH = os.path.join(os.getenv("DATA_DIR", "data"), "schools.duckdb")
 
 def get_connection():
-    return duckdb.connect(DB_PATH, read_only=True)
+    return duckdb.connect(DB_PATH)
 
 def get_voivodeships(con):
     res = con.execute("SELECT DISTINCT wojewodztwo FROM schools WHERE wojewodztwo IS NOT NULL ORDER BY wojewodztwo").fetchall()
