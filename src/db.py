@@ -1,14 +1,16 @@
-import duckdb
 import os
 
-DB_PATH = os.path.join('data', 'schools.duckdb')
+import duckdb
+import pandas as pd
+
+DB_PATH = os.path.join(os.getenv("DATA_DIR", "data"), "schools.duckdb")
 
 def get_connection():
     return duckdb.connect(DB_PATH, read_only=True)
 
 def get_voivodeships(con):
     res = con.execute("SELECT DISTINCT wojewodztwo FROM schools WHERE wojewodztwo IS NOT NULL ORDER BY wojewodztwo").fetchall()
-    return [r[0] for r in res if r[0]]
+    return sorted(r[0] for r in res if r[0])
 
 def get_powiaty(con, woj):
     res = con.execute("SELECT DISTINCT powiat FROM schools WHERE wojewodztwo = ? AND powiat IS NOT NULL ORDER BY powiat", [woj]).fetchall()
@@ -23,7 +25,7 @@ def get_schools(con, miasto):
     return res
 
 def get_school_listings(con, school_id):
-    query = '''SELECT title, subject, price_pln, condition, pickup_location, contact_info, image_bytes, created_at 
+    query = '''SELECT title, subject, price_pln, condition, pickup_location, contact_info, image_bytes, created_at
                FROM listings WHERE school_id = ? ORDER BY created_at DESC'''
     return con.execute(query, [school_id]).fetchall()
 
@@ -37,18 +39,21 @@ def add_listing(db_path, school_id, title, subject, price, condition, pickup, co
 def get_global_stats(con):
     total_high_schools = con.execute("SELECT COUNT(*) FROM schools").fetchone()[0]
     total_listings = con.execute("SELECT COUNT(*) FROM listings").fetchone()[0]
-    
-    df_woj = con.execute('''
-        SELECT wojewodztwo, COUNT(*) as liczba_szkol, COUNT(*) * 2.5 as zuzycie_ton 
+
+    df_woj_rows = con.execute('''
+        SELECT wojewodztwo, COUNT(*) as liczba_szkol, COUNT(*) * 2.5 as zuzycie_ton
         FROM schools GROUP BY wojewodztwo ORDER BY liczba_szkol DESC
-    ''').df()
-    
-    df_types = con.execute("SELECT typ, COUNT(*) as count FROM schools GROUP BY typ").df()
-    
+    ''').fetchall()
+    df_woj = pd.DataFrame(df_woj_rows, columns=["wojewodztwo", "liczba_szkol", "zuzycie_ton"])
+
+    df_types_rows = con.execute("SELECT typ, COUNT(*) as count FROM schools GROUP BY typ").fetchall()
+    df_types = pd.DataFrame(df_types_rows, columns=["typ", "count"])
+
     # Przebudowane na Powiaty aby poprawnie grupowac miasta na prawach powiatu (np. m. st. Warszawa)
-    df_powiaty = con.execute('''
-        SELECT powiat, COUNT(*) as liczba_szkol 
+    df_powiaty_rows = con.execute('''
+        SELECT powiat, COUNT(*) as liczba_szkol
         FROM schools GROUP BY powiat ORDER BY liczba_szkol DESC LIMIT 10
-    ''').df()
-    
+    ''').fetchall()
+    df_powiaty = pd.DataFrame(df_powiaty_rows, columns=["powiat", "liczba_szkol"])
+
     return total_high_schools, total_listings, df_woj, df_types, df_powiaty

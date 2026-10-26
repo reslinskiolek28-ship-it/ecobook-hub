@@ -1,20 +1,31 @@
-import streamlit as st
 import pandas as pd
 import plotly.express as px
-from db import get_connection, get_voivodeships, get_powiaty, get_cities, get_schools, get_school_listings, add_listing, get_global_stats, DB_PATH
+import streamlit as st
+
+from db import (
+    DB_PATH,
+    add_listing,
+    get_cities,
+    get_connection,
+    get_global_stats,
+    get_powiaty,
+    get_school_listings,
+    get_schools,
+    get_voivodeships,
+)
 
 st.set_page_config(page_title='EcoBook Hub', layout='wide', initial_sidebar_state='collapsed')
 
 st.markdown('''
 <style>
-    :root { 
-        --light-green: #39FF14; 
+    :root {
+        --light-green: #39FF14;
         --dark-green: #006400;
         --mid-green: #228B22;
         --yellow: #FFFF00;
         --accent: #FFFFFF;
-        --dark-bg: #070707; 
-        --panel-bg: #111111; 
+        --dark-bg: #070707;
+        --panel-bg: #111111;
     }
     .stApp { background-color: var(--dark-bg); color: #E0E0E0; }
     [data-testid="collapsedControl"] { display: none; }
@@ -23,19 +34,19 @@ st.markdown('''
     .metric-card { background-color: var(--panel-bg); border-top: 3px solid var(--mid-green); padding: 20px; border-radius: 4px; text-align: center; box-shadow: 0 4px 15px rgba(34,139,34,0.1); margin-bottom: 20px; }
     .metric-value { font-size: 34px; font-weight: 900; color: var(--light-green); }
     .metric-label { font-size: 13px; color: #AAA; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; }
-    
+
     button[kind="primary"] { background-color: var(--light-green) !important; color: #000 !important; border: 1px solid var(--light-green) !important; font-weight: bold; }
     button[kind="primary"]:hover { background-color: var(--yellow) !important; border: 1px solid var(--yellow) !important; }
     button[kind="secondary"] { background-color: transparent !important; color: var(--light-green) !important; border: 1px solid var(--light-green) !important; font-weight: bold; }
     button[kind="secondary"]:hover { background-color: var(--dark-green) !important; color: #FFF !important; }
-    
+
     .stTextInput>div>div>input, .stSelectbox>div>div>div, .stNumberInput>div>div>input { background-color: #1A1A1A !important; color: #FFF !important; border: 1px solid #333 !important; border-radius: 0px !important; }
 </style>
 ''', unsafe_allow_html=True)
 
 try:
     con = get_connection()
-except:
+except Exception:
     st.error("Brak bazy danych. Wygeneruj ją skryptem ETL.")
     st.stop()
 
@@ -60,19 +71,22 @@ if st.session_state.page == "RAPORT":
     st.title("ECOBOOK HUB // TERMINAL ANALITYCZNY")
     st.markdown("<h3 style='color: #228B22 !important; font-size: 1.2rem;'>BAZA MINISTERSTWA EDUKACJI NARODOWEJ (RSPO)</h3>", unsafe_allow_html=True)
     st.markdown("---")
-    
+
     try:
         total_high_schools, total_listings, df_woj, df_types, df_powiaty = get_global_stats(con)
-    except:
+    except Exception:
         total_high_schools, total_listings, df_woj, df_types, df_powiaty = 0, 0, pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
 
     c1, c2, c3 = st.columns(3)
-    with c1: st.markdown(f'<div class="metric-card"><div class="metric-value">{total_high_schools}</div><div class="metric-label">Zindeksowanych Szkół Średnich (PL)</div></div>', unsafe_allow_html=True)
-    with c2: st.markdown(f'<div class="metric-card"><div class="metric-value">~ {(total_high_schools * 2.5):,.0f} t</div><div class="metric-label">Roczne Szacunkowe Marnotrawstwo Papieru</div></div>', unsafe_allow_html=True)
-    with c3: st.markdown(f'<div class="metric-card"><div class="metric-value" style="color: #FFF;">{total_listings}</div><div class="metric-label">Aktywnych Ofert Odsprzedaży P2P</div></div>', unsafe_allow_html=True)
+    with c1:
+        st.markdown(f'<div class="metric-card"><div class="metric-value">{total_high_schools}</div><div class="metric-label">Zindeksowanych Szkół Średnich (PL)</div></div>', unsafe_allow_html=True)
+    with c2:
+        st.markdown(f'<div class="metric-card"><div class="metric-value">~ {(total_high_schools * 2.5):,.0f} t</div><div class="metric-label">Roczne Szacunkowe Marnotrawstwo Papieru</div></div>', unsafe_allow_html=True)
+    with c3:
+        st.markdown(f'<div class="metric-card"><div class="metric-value" style="color: #FFF;">{total_listings}</div><div class="metric-label">Aktywnych Ofert Odsprzedaży P2P</div></div>', unsafe_allow_html=True)
 
     st.markdown("---")
-    
+
     col_left, col_right = st.columns([1, 1])
     with col_left:
         st.markdown('''
@@ -107,14 +121,14 @@ if st.session_state.page == "RAPORT":
 
     st.markdown("---")
     st.markdown("#### STATYSTYKI SEKTORA OŚWIATY (DANE RSPO, MEN)")
-    
+
     try:
         w1, w2 = st.columns(2)
         with w1:
             fig1 = px.bar(df_woj, x='wojewodztwo', y='zuzycie_ton', title='Szacowane roczne marnotrawstwo papieru edukacyjnego (Tony)', color_discrete_sequence=['#39FF14'])
             fig1.update_layout(plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', font_color='#FFF', xaxis_title="", yaxis_title="Tony Papieru")
             st.plotly_chart(fig1, use_container_width=True)
-            
+
         with w2:
             custom_colors = ['#006400', '#228B22', '#39FF14', '#FFFF99', '#FFFF00', '#DAA520']
             fig2 = px.pie(df_types, values='count', names='typ', title='Struktura szkół średnich w bazie', color_discrete_sequence=custom_colors, hole=0.4)
@@ -126,7 +140,7 @@ if st.session_state.page == "RAPORT":
         fig3 = px.bar(df_powiaty.sort_values(by='liczba_szkol', ascending=True), y='powiat', x='liczba_szkol', orientation='h', title='Top 10 Powiatów z największą liczbą placówek oświatowych', color_discrete_sequence=['#39FF14'])
         fig3.update_layout(plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', font_color='#FFF', yaxis_title="", xaxis_title="Liczba Szkół Średnich", height=400)
         st.plotly_chart(fig3, use_container_width=True)
-    except:
+    except Exception:
         pass
 
     st.markdown("---")
@@ -135,7 +149,7 @@ if st.session_state.page == "RAPORT":
 elif st.session_state.page == "GIELDA":
     st.title("GIEŁDA LOKALNA // WYSZUKIWARKA")
     st.markdown("Wybierz lokalizację, a następnie wpisz nazwę placówki lub ulicę.")
-    
+
     col_w, col_p, col_m, col_s = st.columns([1, 1, 1, 2])
     with col_w:
         voivodeships = get_voivodeships(con)
@@ -153,28 +167,29 @@ elif st.session_state.page == "GIELDA":
         sel_school_id = school_dict.get(sel_school_name, None)
 
     st.markdown("---")
-    
+
     if sel_school_id:
         st.markdown(f"<h3 style='color: #39FF14 !important;'>AKTYWNA STREFA: {sel_school_name}</h3>", unsafe_allow_html=True)
         tab_list, tab_add = st.tabs(["[ POKAŻ GIEŁDĘ LOKALNĄ ]", "[ + WYSTAW SWÓJ PODRĘCZNIK ]"])
-        
+
         with tab_list:
             listings = get_school_listings(con, sel_school_id)
             if not listings:
-                st.warning(f"BAZA PUSTA. Brak aktywnych ofert na terenie tej placówki. Dodaj pierwszą książkę!")
+                st.warning("BAZA PUSTA. Brak aktywnych ofert na terenie tej placówki. Dodaj pierwszą książkę!")
             else:
-                for l in listings:
+                for listing in listings:
                     with st.container():
                         st.markdown(f'''
                         <div style="border-left: 4px solid #39FF14; background-color: #111; padding: 15px; margin-bottom: 10px;">
-                            <h4 style="color: #FFF !important; margin-bottom: 0; border: none; text-transform: none;">{l[0]} <span style="color: #39FF14;">({l[2]} PLN)</span></h4>
+                            <h4 style="color: #FFF !important; margin-bottom: 0; border: none; text-transform: none;">{listing[0]} <span style="color: #39FF14;">({listing[2]} PLN)</span></h4>
                             <p style="color: #888; font-size: 14px; margin-top: 5px;">
-                                <b>Przedmiot:</b> {l[1]} | <b>Stan:</b> {l[3]} | <b>Punkt Odbioru:</b> {l[4]}<br>
-                                <b>Kontakt:</b> <span style="color: #FFF;">{l[5]}</span>
+                                <b>Przedmiot:</b> {listing[1]} | <b>Stan:</b> {listing[3]} | <b>Punkt Odbioru:</b> {listing[4]}<br>
+                                <b>Kontakt:</b> <span style="color: #FFF;">{listing[5]}</span>
                             </p>
                         </div>
                         ''', unsafe_allow_html=True)
-                        if l[6]: st.image(l[6], width=250)
+                        if listing[6]:
+                            st.image(listing[6], width=250)
 
         with tab_add:
             with st.form("new_offer", clear_on_submit=True):
@@ -188,10 +203,10 @@ elif st.session_state.page == "GIELDA":
                     condition = st.selectbox("Stan Książki", ["Jak Nowy", "Używany (Drobne Ślady)", "Używany (Pozakreślany)"])
                     pickup = st.text_input("Gdzie w szkole (np. Szafki przy sali gimnastycznej)")
                     contact = st.text_input("Kontakt (Tel / Messenger)")
-                
+
                 uploaded_file = st.file_uploader("Zdjęcie (opcjonalnie)", type=['png', 'jpg'])
                 submit = st.form_submit_button(">> ZAINICJUJ OFERTĘ W SZKOLE <<")
-                
+
                 if submit:
                     if not title or not contact:
                         st.error("Pola Tytuł i Kontakt są absolutnie wymagane.")

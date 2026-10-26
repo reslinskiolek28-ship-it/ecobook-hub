@@ -1,8 +1,19 @@
-## Opis Zmian
+## Opis zmian
 
-Opisz zrealizowane zmiany w kodzie.
+Zwięzły opis wprowadzonych zmian i problemu, który rozwiązują.
 
-## Lista kontrolna
-- [ ] Kod przechodzi testy (pytest)
-- [ ] Brak hasel/kluczy w kodzie
-- [ ] Dokumentacja zaktualizowana
+## Typ zmian
+
+- [ ] Poprawka błędu (Bug fix)
+- [ ] Nowa funkcjonalność (Feature)
+- [ ] Refaktoryzacja / optymalizacja (Refactoring)
+- [ ] Aktualizacja dokumentacji (Documentation)
+- [ ] Zmiany w testach / CI
+
+## Lista kontrolna (Checklist)
+
+- [ ] Mój kod jest zgodny ze standardami projektu
+- [ ] Linter `ruff check .` nie zwraca błędów
+- [ ] Wszystkie testy jednostkowe `pytest tests/` przechodzą pomyślnie
+- [ ] Dodałem/zaktualizowałem testy pokrywające wprowadzone zmiany
+- [ ] Do repozytorium nie zostały dołączone poufne dane ani pełne bazy produkcyjne

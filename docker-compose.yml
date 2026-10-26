@@ -1,0 +1,15 @@
+services:
+  ecobook-app:
+    build: .
+    container_name: ecobook_hub_app
+    ports:
+      - "8501:8501"
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    volumes:
+      - ./src:/app/src
+      - ./scripts:/app/scripts
+      - ./tests:/app/tests
+    env_file:
+      - .env
