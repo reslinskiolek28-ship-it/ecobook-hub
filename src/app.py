@@ -69,8 +69,19 @@ def ensure_database():
     script = project_root / "scripts" / "download_data.py"
     if script.exists():
         try:
-            subprocess.run([sys.executable, str(script)], cwd=str(project_root), check=False)
-        except Exception:
+            result = subprocess.run(
+                [sys.executable, str(script)],
+                cwd=str(project_root),
+                capture_output=True,
+                text=True,
+                errors="replace",
+                check=False,
+            )
+            if result.returncode != 0:
+                st.error(result.stderr or result.stdout or "Błąd generowania bazy.")
+                return False
+        except Exception as exc:
+            st.error(str(exc))
             return False
     return Path(DB_PATH).exists()
 
