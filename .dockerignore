@@ -1,0 +1,14 @@
+.git
+.gitignore
+.env
+.env.*
+data/
+*.duckdb
+*.duckdb.wal
+*.csv
+*.xlsx
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.log
+.DS_Store

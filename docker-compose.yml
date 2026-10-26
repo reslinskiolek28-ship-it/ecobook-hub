@@ -11,5 +11,8 @@ services:
       - ./src:/app/src
       - ./scripts:/app/scripts
       - ./tests:/app/tests
-    env_file:
-      - .env
+      - ./data:/app/data
+    environment:
+      - DATA_DIR=/app/data
+      - STREAMLIT_SERVER_PORT=8501
+      - STREAMLIT_SERVER_ADDRESS=0.0.0.0
