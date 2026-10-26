@@ -49,14 +49,15 @@ def sample_db(tmp_path):
             pickup_location VARCHAR,
             contact_info VARCHAR,
             image_bytes BLOB,
+            status VARCHAR DEFAULT 'active',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
         """
     )
     con.execute(
         """
-        INSERT INTO listings (id, school_id, title, subject, price_pln, condition, pickup_location, contact_info, image_bytes)
-        VALUES (1, '1', 'Matematyka 1', 'Matematyka', 50.0, 'Jak Nowy', 'Szafki', 'tel', NULL)
+        INSERT INTO listings (id, school_id, title, subject, price_pln, condition, pickup_location, contact_info, image_bytes, status)
+        VALUES (1, '1', 'Matematyka 1', 'Matematyka', 50.0, 'Jak Nowy', 'Szafki', 'tel', NULL, 'active')
         """
     )
     con.close()

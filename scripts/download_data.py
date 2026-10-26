@@ -63,6 +63,7 @@ def fetch_dane_gov_pl():
             pickup_location VARCHAR,
             contact_info VARCHAR,
             image_bytes BLOB,
+            status VARCHAR DEFAULT 'active',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')

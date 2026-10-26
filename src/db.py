@@ -25,9 +25,21 @@ def get_schools(con, miasto):
     return res
 
 def get_school_listings(con, school_id):
-    query = '''SELECT title, subject, price_pln, condition, pickup_location, contact_info, image_bytes, created_at
-               FROM listings WHERE school_id = ? ORDER BY created_at DESC'''
+    query = '''SELECT id, title, subject, price_pln, condition, pickup_location, contact_info, image_bytes, created_at, status
+               FROM listings WHERE school_id = ? AND status = 'active' ORDER BY created_at DESC'''
     return con.execute(query, [school_id]).fetchall()
+
+
+def mark_listing_sold(db_path, listing_id):
+    con_rw = duckdb.connect(db_path)
+    con_rw.execute("UPDATE listings SET status = 'sold' WHERE id = ?", [listing_id])
+    con_rw.close()
+
+
+def delete_listing(db_path, listing_id):
+    con_rw = duckdb.connect(db_path)
+    con_rw.execute("DELETE FROM listings WHERE id = ?", [listing_id])
+    con_rw.close()
 
 def add_listing(db_path, school_id, title, subject, price, condition, pickup, contact, image_bytes):
     con_rw = duckdb.connect(db_path)

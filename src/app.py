@@ -5,6 +5,7 @@ import streamlit as st
 from db import (
     DB_PATH,
     add_listing,
+    delete_listing,
     get_cities,
     get_connection,
     get_global_stats,
@@ -12,6 +13,7 @@ from db import (
     get_school_listings,
     get_schools,
     get_voivodeships,
+    mark_listing_sold,
 )
 
 st.set_page_config(page_title='EcoBook Hub', layout='wide', initial_sidebar_state='collapsed')
@@ -178,18 +180,28 @@ elif st.session_state.page == "GIELDA":
                 st.warning("BAZA PUSTA. Brak aktywnych ofert na terenie tej placówki. Dodaj pierwszą książkę!")
             else:
                 for listing in listings:
+                    listing_id, title, subject, price, condition, pickup, contact, image, created_at, status = listing
                     with st.container():
-                        st.markdown(f'''
+                        st.markdown(f"""
                         <div style="border-left: 4px solid #39FF14; background-color: #111; padding: 15px; margin-bottom: 10px;">
-                            <h4 style="color: #FFF !important; margin-bottom: 0; border: none; text-transform: none;">{listing[0]} <span style="color: #39FF14;">({listing[2]} PLN)</span></h4>
+                            <h4 style="color: #FFF !important; margin-bottom: 0; border: none; text-transform: none;">{title} <span style="color: #39FF14;">({price} PLN)</span></h4>
                             <p style="color: #888; font-size: 14px; margin-top: 5px;">
-                                <b>Przedmiot:</b> {listing[1]} | <b>Stan:</b> {listing[3]} | <b>Punkt Odbioru:</b> {listing[4]}<br>
-                                <b>Kontakt:</b> <span style="color: #FFF;">{listing[5]}</span>
+                                <b>Przedmiot:</b> {subject} | <b>Stan:</b> {condition} | <b>Punkt Odbioru:</b> {pickup}<br>
+                                <b>Kontakt:</b> <span style="color: #FFF;">{contact}</span>
                             </p>
                         </div>
-                        ''', unsafe_allow_html=True)
-                        if listing[6]:
-                            st.image(listing[6], width=250)
+                        """, unsafe_allow_html=True)
+                        if image:
+                            st.image(image, width=250)
+                        c_sold, c_delete = st.columns(2)
+                        with c_sold:
+                            if st.button("Oznacz jako sprzedane", key=f"sold_{listing_id}"):
+                                mark_listing_sold(DB_PATH, listing_id)
+                                st.rerun()
+                        with c_delete:
+                            if st.button("Usuń ofertę", key=f"delete_{listing_id}"):
+                                delete_listing(DB_PATH, listing_id)
+                                st.rerun()
 
         with tab_add:
             with st.form("new_offer", clear_on_submit=True):
