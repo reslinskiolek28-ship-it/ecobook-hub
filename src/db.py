@@ -1,9 +1,11 @@
 import os
+from pathlib import Path
 
 import duckdb
 import pandas as pd
 
-DB_PATH = os.path.join(os.getenv("DATA_DIR", "data"), "schools.duckdb")
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent
+DB_PATH = os.path.join(os.getenv("DATA_DIR", str(_PROJECT_ROOT / "data")), "schools.duckdb")
 
 def get_connection():
     return duckdb.connect(DB_PATH)

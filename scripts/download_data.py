@@ -1,10 +1,12 @@
 import os
+from pathlib import Path
 
 import duckdb
 import pandas as pd
 import requests
 
-DATA_DIR = os.getenv("DATA_DIR", "data")
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent
+DATA_DIR = os.getenv("DATA_DIR", str(_PROJECT_ROOT / "data"))
 DB_PATH = os.path.join(DATA_DIR, "schools.duckdb")
 EXCEL_PATH = os.path.join(DATA_DIR, "schools_temp.xlsx")
 DATASET_RESOURCE_ID = os.getenv("DATASET_RESOURCE_ID", "1254769")
