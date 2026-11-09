@@ -55,6 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $page = $_GET['page'] ?? 'raport';
+$locked_target = $_GET['target'] ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="pl">
@@ -66,7 +67,9 @@ $page = $_GET['page'] ?? 'raport';
 <style>
 :root { --light-green: #39FF14; --dark-green: #006400; --mid-green: #228B22; --yellow: #FFFF00; --accent: #FFFFFF; --dark-bg: #070707; --panel-bg: #111111; }
 * { box-sizing: border-box; }
-body { background-color: var(--dark-bg); color: #E0E0E0; font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+body { background: radial-gradient(circle at top, #0f1f0f, #070707 60%); color: #E0E0E0; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 24px; }
+.card { background: #141414; border: 1px solid #1f2f1f; border-left: 4px solid #39FF14; border-radius: 10px; padding: 16px; margin-bottom: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.35); transition: transform .15s ease, box-shadow .15s ease; }
+.card:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(34,139,34,0.18); }
 h1, h2, h3 { color: var(--light-green); font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
 .metric-card { background-color: var(--panel-bg); border-top: 3px solid var(--mid-green); padding: 20px; border-radius: 4px; text-align: center; box-shadow: 0 4px 15px rgba(34,139,34,0.1); margin-bottom: 20px; }
 .metric-value { font-size: 34px; font-weight: 900; color: var(--light-green); }
@@ -87,9 +90,17 @@ img { max-width: 100%; }
 <div class="row">
   <form method="get" style="flex:1"><input type="hidden" name="page" value="raport"><button type="submit" class="<?php echo $page==='raport'?'primary':''; ?>" style="width:100%">RAPORT BIZNESOWY I DANE SYSTEMOWE</button></form>
   <form method="get" style="flex:1"><input type="hidden" name="page" value="gielda"><button type="submit" class="<?php echo $page==='gielda'?'primary':''; ?>" style="width:100%">GIEŁDA LOKALNA (WYSZUKIWARKA)</button></form>
+  <form method="get" style="flex:1"><input type="hidden" name="page" value="locked"><input type="hidden" name="target" value="biblioteka"><button type="submit" style="width:100%">🔒 BIBLIOTEKA</button></form>
+  <form method="get" style="flex:1"><input type="hidden" name="page" value="locked"><input type="hidden" name="target" value="sklep"><button type="submit" style="width:100%">🔒 SKLEP ONLINE</button></form>
 </div>
 <br>
-<?php if ($page === 'raport'): ?>
+<?php if ($page === 'locked'): ?>
+  <div class="card" style="text-align:center;padding:40px;">
+    <h2>🔒 W TRAKCIE BUDOWY</h2>
+    <p style="color:#aaa;font-size:16px;margin:12px 0 20px;">Zakładka <b><?php echo htmlspecialchars($locked_target === 'biblioteka' ? 'BIBLIOTEKA' : 'SKLEP ONLINE'); ?></b> jest obecnie w trakcie budowy. Zapraszamy wkrótce!</p>
+    <form method="get"><input type="hidden" name="page" value="raport"><button type="submit" class="primary">⬅️ WRÓĆ DO RAPORTU</button></form>
+  </div>
+<?php elseif ($page === 'raport'): ?>
   <h1>ECOBOOK HUB // TERMINAL ANALITYCZNY</h1>
   <h3 style="color:#228B22 !important;font-size:1.2rem;">BAZA MINISTERSTWA EDUKACJI NARODOWEJ (RSPO)</h3>
   <hr>
@@ -108,17 +119,17 @@ img { max-width: 100%; }
   <div class="row">
     <div class="col">
       <h3>SZKOŁY WG WOJEWÓDZTWA</h3>
-      <canvas id="chartWoj"></canvas>
+      <div style="max-width:340px;margin:0 auto;"><canvas id="chartWoj"></canvas></div>
     </div>
     <div class="col">
       <h3>STRUKTURA TYPÓW SZKÓŁ</h3>
-      <canvas id="chartTypes"></canvas>
+      <div style="max-width:300px;margin:0 auto;"><canvas id="chartTypes"></canvas></div>
     </div>
   </div>
   <div class="row">
     <div class="col">
       <h3>TOP 10 POWIATÓW</h3>
-      <canvas id="chartPow"></canvas>
+      <div style="max-width:480px;margin:0 auto;"><canvas id="chartPow"></canvas></div>
     </div>
   </div>
   <script>
@@ -127,11 +138,19 @@ img { max-width: 100%; }
   new Chart(document.getElementById('chartWoj'), { type:'bar', data:{labels:wojLabels, datasets:[{label:'Liczba szkół', data:wojData, backgroundColor:'#39FF14'}]} });
   const typeLabels = <?php echo json_encode(array_column($df_types, 'typ')); ?>;
   const typeData = <?php echo json_encode(array_map('intval', array_column($df_types, 'count'))); ?>;
-  new Chart(document.getElementById('chartTypes'), { type:'pie', data:{labels:typeLabels, datasets:[{data:typeData, backgroundColor:['#39FF14','#228B22','#006400','#FFFF00','#FFFFFF']}] } });
+  const typeTotal = typeData.reduce((a,b)=>a+b,0);
+  new Chart(document.getElementById('chartTypes'), {
+    type: 'doughnut',
+    data: { labels: typeLabels, datasets: [{ data: typeData, backgroundColor: ['#39FF14','#228B22','#006400','#FFFF00','#FFFFFF'], borderColor: '#070707', borderWidth: 2 }] },
+    options: { plugins: { legend: { position: 'bottom', labels: { color: '#ccc', font: { size: 11 } } }, tooltip: { callbacks: { label: function(ctx){ const v = ctx.parsed; const p = typeTotal ? (v/typeTotal*100).toFixed(1) : 0; return ctx.label + ': ' + v + ' (' + p + '%)'; } } } }, cutout: '60%' }
+  });
   const powLabels = <?php echo json_encode(array_column($df_powiaty, 'powiat')); ?>;
   const powData = <?php echo json_encode(array_map('intval', array_column($df_powiaty, 'liczba_szkol'))); ?>;
   new Chart(document.getElementById('chartPow'), { type:'bar', data:{labels:powLabels, datasets:[{label:'Liczba szkół', data:powData, backgroundColor:'#FFFF00'}]}, options:{indexAxis:'y'} });
   </script>
+  <div style="text-align:center;margin-top:20px;">
+    <form method="get"><input type="hidden" name="page" value="gielda"><button type="submit" class="primary">➡️ PRZEJDŹ DO GIEŁDY LOKALNEJ</button></form>
+  </div>
 <?php else: ?>
   <h1>GIEŁDA LOKALNA</h1>
   <?php
@@ -264,6 +283,9 @@ img { max-width: 100%; }
       <button type="submit" class="primary">>> ZAINICJUJ OFERTĘ W SZKOLE <<</button>
     </form>
   <?php endif; ?>
+  <div style="text-align:center;margin-top:20px;">
+    <form method="get"><input type="hidden" name="page" value="raport"><button type="submit" class="primary">⬅️ WRÓĆ DO RAPORTU</button></form>
+  </div>
 <?php endif; ?>
 </body>
 </html>
