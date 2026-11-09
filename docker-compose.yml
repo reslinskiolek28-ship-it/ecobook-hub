@@ -1,18 +1,10 @@
-services:
+﻿services:
   ecobook-app:
     build: .
     container_name: ecobook_hub_app
     ports:
-      - "8501:8501"
-    dns:
-      - 8.8.8.8
-      - 1.1.1.1
+      - "8080:80"
     volumes:
-      - ./src:/app/src
-      - ./scripts:/app/scripts
-      - ./tests:/app/tests
-      - ./data:/app/data
+      - ./data:/var/www/html/data
     environment:
-      - DATA_DIR=/app/data
-      - STREAMLIT_SERVER_PORT=8501
-      - STREAMLIT_SERVER_ADDRESS=0.0.0.0
+      - DATA_DIR=/var/www/html/data

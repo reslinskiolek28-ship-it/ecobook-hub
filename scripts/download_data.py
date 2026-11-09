@@ -1,16 +1,17 @@
-import os
+﻿import os
+import sqlite3
 from pathlib import Path
 
-import duckdb
 import pandas as pd
 import requests
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = os.getenv("DATA_DIR", str(_PROJECT_ROOT / "data"))
-DB_PATH = os.path.join(DATA_DIR, "schools.duckdb")
+DB_PATH = os.path.join(DATA_DIR, "schools.sqlite")
 EXCEL_PATH = os.path.join(DATA_DIR, "schools_temp.xlsx")
 DATASET_RESOURCE_ID = os.getenv("DATASET_RESOURCE_ID", "1254769")
 API_BASE_URL = os.getenv("API_BASE_URL", "https://api.dane.gov.pl/1.4")
+
 
 def fetch_dane_gov_pl():
     os.makedirs(DATA_DIR, exist_ok=True)
@@ -36,40 +37,67 @@ def fetch_dane_gov_pl():
     if "Wojewodztwo" in df.columns:
         df["Wojewodztwo"] = df["Wojewodztwo"].apply(normalize_wojewodztwo)
 
-    print("Zasilanie bazy DuckDB...")
-    con = duckdb.connect(DB_PATH)
+    print("Zasilanie bazy SQLite...")
 
+    if os.path.exists(DB_PATH):
+        os.remove(DB_PATH)
+
+    con = sqlite3.connect(DB_PATH)
     con.execute('''
-        CREATE OR REPLACE TABLE schools AS
-        SELECT
-            CAST(RSPO AS VARCHAR) as rspo,
-            "Nazwa placówki" || COALESCE(' (ul. ' || CAST(Ulica AS VARCHAR) || ')', '') as nazwa,
-            Wojewodztwo as wojewodztwo,
-            Powiat as powiat,
-            "Miejscowość" as miasto,
-            "Typ podmiotu" as typ
-        FROM df
-        WHERE "Typ podmiotu" ILIKE '%Liceum%'
-           OR "Typ podmiotu" ILIKE '%Technikum%'
-           OR "Typ podmiotu" ILIKE '%Branżow%'
+        CREATE TABLE schools (
+            rspo TEXT,
+            nazwa TEXT,
+            wojewodztwo TEXT,
+            powiat TEXT,
+            miasto TEXT,
+            typ TEXT
+        )
     ''')
-
     con.execute('''
-        CREATE OR REPLACE TABLE listings (
-            id INTEGER,
-            school_id VARCHAR,
-            title VARCHAR,
-            subject VARCHAR,
-            price_pln DECIMAL(10,2),
-            condition VARCHAR,
-            pickup_location VARCHAR,
-            contact_info VARCHAR,
+        CREATE TABLE listings (
+            id INTEGER PRIMARY KEY,
+            school_id TEXT,
+            title TEXT,
+            subject TEXT,
+            price_pln REAL,
+            condition TEXT,
+            pickup_location TEXT,
+            contact_info TEXT,
             image_bytes BLOB,
-            status VARCHAR DEFAULT 'active',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            status TEXT DEFAULT 'active',
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
     ''')
 
+    mask = (
+        df["Typ podmiotu"].astype(str).str.contains("Liceum", case=False, na=False)
+        | df["Typ podmiotu"].astype(str).str.contains("Technikum", case=False, na=False)
+        | df["Typ podmiotu"].astype(str).str.contains("Branżow", case=False, na=False)
+    )
+    filtered = df[mask]
+
+    rows = []
+    for _, r in filtered.iterrows():
+        rspo = str(r.get("RSPO")) if pd.notna(r.get("RSPO")) else None
+        ulica = r.get("Ulica")
+        nazwa = str(r.get("Nazwa placówki"))
+        if pd.notna(ulica):
+            nazwa = nazwa + " (ul. " + str(ulica) + ")"
+        woj = r.get("Wojewodztwo")
+        powiat = r.get("Powiat")
+        miasto = r.get("Miejscowość")
+        typ = r.get("Typ podmiotu")
+        rows.append((
+            rspo,
+            nazwa,
+            None if pd.isna(woj) else str(woj),
+            None if pd.isna(powiat) else str(powiat),
+            None if pd.isna(miasto) else str(miasto),
+            None if pd.isna(typ) else str(typ),
+        ))
+
+    con.executemany("INSERT INTO schools VALUES (?,?,?,?,?,?)", rows)
+    con.commit()
     con.close()
 
     if os.path.exists(EXCEL_PATH):
@@ -80,6 +108,7 @@ def fetch_dane_gov_pl():
 
     print("SUKCES: Baza danych gotowa.")
 
+
 def normalize_wojewodztwo(value):
     """Normalizuje nazwę województwa do formatu Title Case."""
     if value is None:
@@ -88,7 +117,6 @@ def normalize_wojewodztwo(value):
     if not text or text.lower() in {"nan", "none", ""}:
         return None
     return text.title()
-
 
 
 if __name__ == '__main__':

@@ -1,14 +1,11 @@
-FROM python:3.11-slim
+﻿FROM php:8.2-apache
 
-WORKDIR /app
+WORKDIR /var/www/html
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY . /var/www/html
 
-COPY . .
+RUN mkdir -p /var/www/html/data && chown -R www-data:www-data /var/www/html
 
-RUN mkdir -p data
+EXPOSE 80
 
-EXPOSE 8501
-
-CMD python scripts/download_data.py || true && streamlit run src/app.py --server.port 8501 --server.address 0.0.0.0
+CMD ["apache2-foreground"]

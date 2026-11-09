@@ -1,38 +1,38 @@
-# 📚 EcoBook Hub
+﻿# đź“š EcoBook Hub
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python: 3.11](https://img.shields.io/badge/Python-3.11-blue.svg)](https://www.python.org/)
 [![DuckDB](https://img.shields.io/badge/Engine-DuckDB-FFF000.svg)](https://duckdb.org/)
-[![Streamlit](https://img.shields.io/badge/Frontend-Streamlit-FF4B4B.svg)](https://streamlit.io/)
+[![PHP](https://img.shields.io/badge/Frontend-PHP-777BB4.svg)](https://www.php.net/)
 [![CI Pipeline](https://github.com/twoj-login/ecobook-hub/actions/workflows/ci.yml/badge.svg)](.github/workflows/ci.yml)
 
-> Otwarta platforma wymiany i sprzedaży używanych podręczników szkolnych zintegrowana z danymi z portalu [dane.gov.pl](https://dane.gov.pl) (Rejestr Szkół i Placówek Oświatowych – RSPO).
+> Otwarta platforma wymiany i sprzedaĹĽy uĹĽywanych podrÄ™cznikĂłw szkolnych zintegrowana z danymi z portalu [dane.gov.pl](https://dane.gov.pl) (Rejestr SzkĂłĹ‚ i PlacĂłwek OĹ›wiatowych â€“ RSPO).
 
 ---
 
-## 🎯 Problem społeczny i cel projektu
+## đźŽŻ Problem spoĹ‚eczny i cel projektu
 
-Wysokie koszty nowych podręczników szkolnych stanowią znaczne obciążenie dla domowych budżetów. Oficjalne dane Ministerstwa Edukacji są publicznie dostępne, jednak publikowane są w formie surowych plików Excel liczących tysiące rekordów.
+Wysokie koszty nowych podrÄ™cznikĂłw szkolnych stanowiÄ… znaczne obciÄ…ĹĽenie dla domowych budĹĽetĂłw. Oficjalne dane Ministerstwa Edukacji sÄ… publicznie dostÄ™pne, jednak publikowane sÄ… w formie surowych plikĂłw Excel liczÄ…cych tysiÄ…ce rekordĂłw.
 
-Nasz projekt rozwiązuje ten problem poprzez:
-1. **Przejrzystą wyszukiwarkę szkół**: Wygodne filtrowanie placówek według **województwa, powiatu, miasta i typu szkoły**.
-2. **Lokalną giełdę P2P**: Możliwość wystawienia i zakupu używanych podręczników bezpośrednio w obrębie własnej szkoły.
-3. **Transparentność i analitykę**: Kafelki KPI oraz wykresy pokazujące skalę szkolnictwa w regionach i szacunkowe marnotrawstwo papieru.
-
----
-
-## 🏛️ Architektura i optymalizacja wydajności
-
-Aplikacja została zaprojektowana w oparciu o architekturę in-memory bez konieczności stawiania zewnętrznych serwerów baz danych:
-
-* **Engine analityczny: [DuckDB](https://duckdb.org)** – ultraszybki, kolumnowy silnik SQL osadzony w procesie aplikacji. Zapytania filtrujące i agregujące ponad 20 000 placówek wykonują się w ułamkach milisekund.
-* **Format magazynowania: [DuckDB](https://duckdb.org)** – osadzona baza `schools.duckdb` z tabelami `schools` i `listings`, bez zewnętrznego serwera.
-* **Interfejs użytkownika: [Streamlit](https://streamlit.io)** – lekki, responsywny frontend w Pythonie z automatycznym odświeżaniem widoków.
-* **Konteneryzacja: [Docker](https://www.docker.com)** – uruchomienie jednym poleceniem na dowolnym środowisku.
+Nasz projekt rozwiÄ…zuje ten problem poprzez:
+1. **PrzejrzystÄ… wyszukiwarkÄ™ szkĂłĹ‚**: Wygodne filtrowanie placĂłwek wedĹ‚ug **wojewĂłdztwa, powiatu, miasta i typu szkoĹ‚y**.
+2. **LokalnÄ… gieĹ‚dÄ™ P2P**: MoĹĽliwoĹ›Ä‡ wystawienia i zakupu uĹĽywanych podrÄ™cznikĂłw bezpoĹ›rednio w obrÄ™bie wĹ‚asnej szkoĹ‚y.
+3. **TransparentnoĹ›Ä‡ i analitykÄ™**: Kafelki KPI oraz wykresy pokazujÄ…ce skalÄ™ szkolnictwa w regionach i szacunkowe marnotrawstwo papieru.
 
 ---
 
-## 🚀 Szybki start (Uruchomienie jedną komendą)
+## đźŹ›ď¸Ź Architektura i optymalizacja wydajnoĹ›ci
+
+Aplikacja zostaĹ‚a zaprojektowana w oparciu o architekturÄ™ in-memory bez koniecznoĹ›ci stawiania zewnÄ™trznych serwerĂłw baz danych:
+
+* **Engine analityczny: [DuckDB](https://duckdb.org)** â€“ ultraszybki, kolumnowy silnik SQL osadzony w procesie aplikacji. Zapytania filtrujÄ…ce i agregujÄ…ce ponad 20 000 placĂłwek wykonujÄ… siÄ™ w uĹ‚amkach milisekund.
+* **Format magazynowania: [DuckDB](https://duckdb.org)** â€“ osadzona baza `schools.duckdb` z tabelami `schools` i `listings`, bez zewnÄ™trznego serwera.
+* **Interfejs uĹĽytkownika: [Streamlit](https://streamlit.io)** â€“ lekki, responsywny frontend w Pythonie z automatycznym odĹ›wieĹĽaniem widokĂłw.
+* **Konteneryzacja: [Docker](https://www.docker.com)** â€“ uruchomienie jednym poleceniem na dowolnym Ĺ›rodowisku.
+
+---
+
+## đźš€ Szybki start (Uruchomienie jednÄ… komendÄ…)
 
 Najprostszym i zalecanym sposobem uruchomienia projektu jest **Docker Compose**:
 
@@ -40,8 +40,8 @@ Najprostszym i zalecanym sposobem uruchomienia projektu jest **Docker Compose**:
 docker compose up --build
 ```
 
-Aplikacja pobierze najświeższe dane z `dane.gov.pl`, przetworzy je do bazy DuckDB i uruchomi interfejs pod adresem:
-👉 **[http://localhost:8501](http://localhost:8501)**
+Aplikacja pobierze najĹ›wieĹĽsze dane z `dane.gov.pl`, przetworzy je do bazy DuckDB i uruchomi interfejs pod adresem:
+đź‘‰ **[http://localhost:8501](http://localhost:8501)**
 
 Zatrzymanie kontenera:
 ```bash
@@ -50,7 +50,7 @@ docker compose down
 
 ---
 
-## 💻 Uruchomienie lokalne (bez Dockera)
+## đź’» Uruchomienie lokalne (bez Dockera)
 
 Wymagany: **Python 3.11+**
 
@@ -60,7 +60,7 @@ Wymagany: **Python 3.11+**
    cd ecobook-hub
    ```
 
-2. Utwórz i aktywuj środowisko wirtualne:
+2. UtwĂłrz i aktywuj Ĺ›rodowisko wirtualne:
    ```bash
    python -m venv .venv
    # Windows:
@@ -69,27 +69,27 @@ Wymagany: **Python 3.11+**
    source .venv/bin/activate
    ```
 
-3. Zainstaluj zależności produkcyjne:
+3. Zainstaluj zaleĹĽnoĹ›ci produkcyjne:
    ```bash
    pip install -r requirements.txt
    ```
 
-4. Pobierz i zaktualizuj bazę danych (użyj Pythona 3.11):
+4. Pobierz i zaktualizuj bazÄ™ danych (uĹĽyj Pythona 3.11):
    ```bash
    py -3.11 scripts/download_data.py
    ```
 
-5. Uruchom aplikację:
+5. Uruchom aplikacjÄ™:
    ```bash
-   py -3.11 -m streamlit run src/app.py --server.port 8501
+   php -S localhost:8000
    ```
 ---
 
-## 🧪 Testy jednostkowe i jakość kodu
+## đź§Ş Testy jednostkowe i jakoĹ›Ä‡ kodu
 
-Projekt posiada pokrycie testami jednostkowymi (`pytest`) oraz weryfikację linterem (`ruff`).
+Projekt posiada pokrycie testami jednostkowymi (`pytest`) oraz weryfikacjÄ™ linterem (`ruff`).
 
-1. Zainstaluj zależności deweloperskie:
+1. Zainstaluj zaleĹĽnoĹ›ci deweloperskie:
    ```bash
    pip install -r requirements-dev.txt
    ```
@@ -104,72 +104,73 @@ Projekt posiada pokrycie testami jednostkowymi (`pytest`) oraz weryfikację lint
    pytest -v tests/
    ```
 
-*(Możesz to również uruchomić wewnątrz działającego kontenera: `docker exec ecobook_hub_app pytest -v tests/`)*
+*(MoĹĽesz to rĂłwnieĹĽ uruchomiÄ‡ wewnÄ…trz dziaĹ‚ajÄ…cego kontenera: `docker exec ecobook_hub_app pytest -v tests/`)*
 
 ---
 
-## 📁 Struktura repozytorium
+## đź“ Struktura repozytorium
 
 ```text
-├── .github/
-│   ├── workflows/
-│   │   └── ci.yml                 # Automatyczny pipeline GitHub Actions (testy + linter)
-│   ├── ISSUE_TEMPLATE/            # Szablony zgłaszania błędów i propozycji funkcji
-│   └── PULL_REQUEST_TEMPLATE.md   # Szablon sprawdzania Pull Requestów
-├── docs/
-│   ├── RAPORT_KONCOWY_ISO21513.md # Raport końcowy oparty o standard ISO 21513
-│   ├── LESSONS_LEARNED_PMI.md     # Doświadczenia projektowe według metodyki PMI
-│   └── KONTROLA_DOKUMENTOW_ISO_10013.md # Rejestr kontroli dokumentów
-├── scripts/
-│   └── download_data.py           # Skrypt pobierający dane z API dane.gov.pl
-├── src/
-│   ├── app.py                     # Aplikacja dashboardowa Streamlit + DuckDB
-│   └── db.py                      # Warstwa dostępu do bazy DuckDB
-├── tests/
-│   ├── conftest.py                # Konfiguracja ścieżek testowych
-│   ├── test_db.py                 # Testy schematu i zapytań DuckDB
-│   └── test_download_data.py      # Testy normalizacji danych
-├── .env.example                   # Przykładowa konfiguracja zmiennych środowiskowych
-├── .gitignore                     # Blokowanie dużych plików produkcyjnych i cache'u
-├── docker-compose.yml             # Definicja uruchomieniowa kontenera
-├── Dockerfile                     # Obraz kontenera Python 3.11-slim
-├── pyproject.toml                 # Konfiguracja Ruff i Pytest
-├── requirements.txt               # Zależności produkcyjne
-├── requirements-dev.txt           # Zależności deweloperskie (pytest, ruff)
-├── CHANGELOG.md                   # Historia wersji i zmian w projekcie
-├── CODE_OF_CONDUCT.md             # Kodeks postępowania społeczności
-├── CONTRIBUTING.md                # Przewodnik kontrybucji do projektu
-├── LICENSE                        # Licencja MIT
-└── README.md                      # Dokumentacja główna projektu
+â”śâ”€â”€ .github/
+â”‚   â”śâ”€â”€ workflows/
+â”‚   â”‚   â””â”€â”€ ci.yml                 # Automatyczny pipeline GitHub Actions (testy + linter)
+â”‚   â”śâ”€â”€ ISSUE_TEMPLATE/            # Szablony zgĹ‚aszania bĹ‚Ä™dĂłw i propozycji funkcji
+â”‚   â””â”€â”€ PULL_REQUEST_TEMPLATE.md   # Szablon sprawdzania Pull RequestĂłw
+â”śâ”€â”€ docs/
+â”‚   â”śâ”€â”€ RAPORT_KONCOWY_ISO21513.md # Raport koĹ„cowy oparty o standard ISO 21513
+â”‚   â”śâ”€â”€ LESSONS_LEARNED_PMI.md     # DoĹ›wiadczenia projektowe wedĹ‚ug metodyki PMI
+â”‚   â””â”€â”€ KONTROLA_DOKUMENTOW_ISO_10013.md # Rejestr kontroli dokumentĂłw
+â”śâ”€â”€ scripts/
+â”‚   â””â”€â”€ download_data.py           # Skrypt pobierajÄ…cy dane z API dane.gov.pl
+â”śâ”€â”€ src/
+â”‚   â”śâ”€â”€ app.py                     # Aplikacja dashboardowa Streamlit + DuckDB
+â”‚   â””â”€â”€ db.py                      # Warstwa dostÄ™pu do bazy DuckDB
+â”śâ”€â”€ tests/
+â”‚   â”śâ”€â”€ conftest.py                # Konfiguracja Ĺ›cieĹĽek testowych
+â”‚   â”śâ”€â”€ test_db.py                 # Testy schematu i zapytaĹ„ DuckDB
+â”‚   â””â”€â”€ test_download_data.py      # Testy normalizacji danych
+â”śâ”€â”€ .env.example                   # PrzykĹ‚adowa konfiguracja zmiennych Ĺ›rodowiskowych
+â”śâ”€â”€ .gitignore                     # Blokowanie duĹĽych plikĂłw produkcyjnych i cache'u
+â”śâ”€â”€ docker-compose.yml             # Definicja uruchomieniowa kontenera
+â”śâ”€â”€ Dockerfile                     # Obraz kontenera Python 3.11-slim
+â”śâ”€â”€ pyproject.toml                 # Konfiguracja Ruff i Pytest
+â”śâ”€â”€ requirements.txt               # ZaleĹĽnoĹ›ci produkcyjne
+â”śâ”€â”€ requirements-dev.txt           # ZaleĹĽnoĹ›ci deweloperskie (pytest, ruff)
+â”śâ”€â”€ CHANGELOG.md                   # Historia wersji i zmian w projekcie
+â”śâ”€â”€ CODE_OF_CONDUCT.md             # Kodeks postÄ™powania spoĹ‚ecznoĹ›ci
+â”śâ”€â”€ CONTRIBUTING.md                # Przewodnik kontrybucji do projektu
+â”śâ”€â”€ LICENSE                        # Licencja MIT
+â””â”€â”€ README.md                      # Dokumentacja gĹ‚Ăłwna projektu
 ```
 
 ---
 
-## 📊 Źródło danych
+## đź“Š ĹąrĂłdĹ‚o danych
 
-Dane pochodzą z oficjalnego rejestru publicznego udostępnianego przez Ministerstwo Edukacji:
-* **Zbiór danych:** *Rejestr Szkół i Placówek Oświatowych (RSPO)*
-* **Portal:** [dane.gov.pl (zasób ID 1254769)](https://dane.gov.pl)
-* **Aktualizacja:** Skrypt `scripts/download_data.py` automatycznie odpytuje endpoint API `https://api.dane.gov.pl/1.4/resources/1254769` i generuje zoptymalizowaną bazę DuckDB.
-
----
-
-## 📄 Dokumentacja formalna
-
-Szczegółowa dokumentacja zarządcza znajduje się w katalogu `docs/`:
-* 📘 [Raport końcowy wg ISO 21513](docs/RAPORT_KONCOWY_ISO21513.md) – cele, rezultaty, plan vs realizacja, wpływ społeczny i wnioski (zgodnie z kontrolą dokumentów ISO 10013).
-* 📗 [Lessons Learned wg PMI](docs/LESSONS_LEARNED_PMI.md) – rejestr doświadczeń projektowych, sukcesy, wyzwania i rekomendacje (zgodnie z kontrolą dokumentów ISO 10013).
+Dane pochodzÄ… z oficjalnego rejestru publicznego udostÄ™pnianego przez Ministerstwo Edukacji:
+* **ZbiĂłr danych:** *Rejestr SzkĂłĹ‚ i PlacĂłwek OĹ›wiatowych (RSPO)*
+* **Portal:** [dane.gov.pl (zasĂłb ID 1254769)](https://dane.gov.pl)
+* **Aktualizacja:** Skrypt `scripts/download_data.py` automatycznie odpytuje endpoint API `https://api.dane.gov.pl/1.4/resources/1254769` i generuje zoptymalizowanÄ… bazÄ™ DuckDB.
 
 ---
 
-## 🤝 Współpraca (Contributing)
+## đź“„ Dokumentacja formalna
 
-Zapraszamy do współtworzenia projektu! Zapoznaj się z [CONTRIBUTING.md](CONTRIBUTING.md) oraz [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+SzczegĂłĹ‚owa dokumentacja zarzÄ…dcza znajduje siÄ™ w katalogu `docs/`:
+* đź“ [Raport koĹ„cowy wg ISO 21513](docs/RAPORT_KONCOWY_ISO21513.md) â€“ cele, rezultaty, plan vs realizacja, wpĹ‚yw spoĹ‚eczny i wnioski (zgodnie z kontrolÄ… dokumentĂłw ISO 10013).
+* đź“— [Lessons Learned wg PMI](docs/LESSONS_LEARNED_PMI.md) â€“ rejestr doĹ›wiadczeĹ„ projektowych, sukcesy, wyzwania i rekomendacje (zgodnie z kontrolÄ… dokumentĂłw ISO 10013).
 
-## 👤 Autor
+---
 
-* **Zespół EcoBook Hub** – pomysł, implementacja, testy i dokumentacja
+## đź¤ť WspĂłĹ‚praca (Contributing)
 
-## ⚖️ Licencja
+Zapraszamy do wspĂłĹ‚tworzenia projektu! Zapoznaj siÄ™ z [CONTRIBUTING.md](CONTRIBUTING.md) oraz [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
-Projekt jest udostępniony na warunkach otwartej licencji [MIT](LICENSE). (c) 2026 EcoBook Hub.
+## đź‘¤ Autor
+
+* **ZespĂłĹ‚ EcoBook Hub** â€“ pomysĹ‚, implementacja, testy i dokumentacja
+
+## âš–ď¸Ź Licencja
+
+Projekt jest udostÄ™pniony na warunkach otwartej licencji [MIT](LICENSE). (c) 2026 EcoBook Hub.
+

@@ -1,4 +1,4 @@
-name: CI Pipeline
+﻿name: CI Pipeline
 
 on:
   push:
@@ -14,22 +14,27 @@ jobs:
       - name: Sprawdzenie kodu repozytorium
         uses: actions/checkout@v4
 
-      - name: Konfiguracja środowiska Python
+      - name: Konfiguracja PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      - name: Lint PHP
+        run: |
+          find . -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Konfiguracja Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: "pip"
 
-      - name: Instalacja zależności produkcyjnych i deweloperskich
+      - name: Instalacja zależności Python
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
 
-      - name: Uruchomienie lintera (Ruff)
-        run: |
-          ruff check .
-
-      - name: Uruchomienie testów jednostkowych (pytest)
+      - name: Testy Python (download_data)
         run: |
           pytest -v tests/
