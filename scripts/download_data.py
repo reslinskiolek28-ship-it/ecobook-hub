@@ -65,6 +65,7 @@ def fetch_dane_gov_pl():
             contact_info TEXT,
             image_bytes BLOB,
             klasa INTEGER,
+            user_id INTEGER DEFAULT NULL,
             status TEXT DEFAULT 'active',
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )

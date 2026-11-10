@@ -1,7 +1,35 @@
 ﻿<?php
 require __DIR__ . '/includes/db.php';
 
+session_start();
+
 $action = $_REQUEST['action'] ?? '';
+$user = $_SESSION['user'] ?? null;
+$username = $user ? $user['username'] : '';
+
+if ($action === 'login') {
+    $username = $_POST['username'] ?? '';
+    $password = $_POST['password'] ?? '';
+    if ($username && $password) {
+        $pdo = db();
+        $st = $pdo->prepare("SELECT id, username, password_hash FROM users WHERE username = ?");
+        $st->execute([$username]);
+        $user = $st->fetch();
+        if ($user && password_verify($password, $user['password_hash'])) {
+            $_SESSION['user'] = $user;
+            header('Location: ?');
+            exit;
+        }
+    }
+    $login_error = 'Nieprawidłowy login lub hasło';
+}
+
+if ($action === 'logout') {
+    unset($_SESSION['user']);
+    session_destroy();
+    header('Location: ?');
+    exit;
+}
 
 if ($action === 'image') {
     $id = (int)($_GET['id'] ?? 0);
@@ -460,3 +488,4 @@ img { max-width: 100%; }
 <?php endif; ?>
 </body>
 </html>
+

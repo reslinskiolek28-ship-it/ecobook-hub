@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 // includes/db.php
 function db_path(): string {
     $dataDir = getenv('DATA_DIR');
@@ -91,9 +91,9 @@ function delete_listing($id): void {
     $st->execute([$id]);
 }
 
-function add_listing($school_id, $title, $subject, $price, $condition, $pickup, $contact, $image_bytes, $klasa = null): void {
+function add_listing($school_id, $title, $subject, $price, $condition, $pickup, $contact, $image_bytes, $klasa = null, $user_id = null): void {
     $pdo = db();
-    $st = $pdo->prepare("INSERT INTO listings (id, school_id, title, subject, price_pln, condition, pickup_location, contact_info, image_bytes, klasa) VALUES ((SELECT COALESCE(MAX(id), 0) + 1 FROM listings), :school_id, :title, :subject, :price, :condition, :pickup, :contact, :image, :klasa)");
+    $st = $pdo->prepare("INSERT INTO listings (id, school_id, title, subject, price_pln, condition, pickup_location, contact_info, image_bytes, klasa, user_id) VALUES ((SELECT COALESCE(MAX(id), 0) + 1 FROM listings), :school_id, :title, :subject, :price, :condition, :pickup, :contact, :image, :klasa, :user_id)");
     $st->bindValue(':school_id', $school_id);
     $st->bindValue(':title', $title);
     $st->bindValue(':subject', $subject);
@@ -111,17 +111,37 @@ function add_listing($school_id, $title, $subject, $price, $condition, $pickup, 
     } else {
         $st->bindValue(':klasa', (int)$klasa, PDO::PARAM_INT);
     }
+    $st->bindValue(':user_id', $user_id, PDO::PARAM_NULL);
     $st->execute();
 }
 
-function get_global_stats(): array {
+function register_user($username, $password): ?int {
     $pdo = db();
-    $total_schools = (int)$pdo->query("SELECT COUNT(*) FROM schools")->fetchColumn();
-    $total_listings = (int)$pdo->query("SELECT COUNT(*) FROM listings")->fetchColumn();
-
-    $woj = $pdo->query("SELECT wojewodztwo, COUNT(*) as liczba_szkol, COUNT(*) * 2.5 as zuzycie_ton FROM schools GROUP BY wojewodztwo ORDER BY liczba_szkol DESC")->fetchAll();
-    $types = $pdo->query("SELECT typ, COUNT(*) as count FROM schools GROUP BY typ")->fetchAll();
-    $powiaty = $pdo->query("SELECT powiat, COUNT(*) as liczba_szkol FROM schools GROUP BY powiat ORDER BY liczba_szkol DESC LIMIT 10")->fetchAll();
-
-    return [$total_schools, $total_listings, $woj, $types, $powiaty];
+    $hash = password_hash($password, PASSWORD_DEFAULT);
+    try {
+        $st = $pdo->prepare("INSERT INTO users (username, password_hash) VALUES (?, ?)");
+        $st->execute([$username, $hash]);
+        return (int)$pdo->lastInsertId();
+    } catch (PDOException $e) {
+        if ($e->getCode() == 23000) {
+            return null;
+        }
+        throw $e;
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
