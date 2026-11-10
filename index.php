@@ -306,11 +306,11 @@ img { max-width: 100%; }
 
     <?php
     function relevanceScore($title, $subject, $s) {
-        $t = mb_strtolower($title);
-        $sub = mb_strtolower($subject);
+        $t = strtolower($title);
+        $sub = strtolower($subject);
         if ($t === $s) return 0;
-        $pt = mb_strpos($t, $s);
-        $ps = mb_strpos($sub, $s);
+        $pt = strpos($t, $s);
+        $ps = strpos($sub, $s);
         if ($pt === 0) return 1;
         if ($ps === 0) return 100;
         if ($pt !== false) return 10 + $pt;
@@ -320,7 +320,7 @@ img { max-width: 100%; }
 
     if ($search !== '') {
         usort($listings, function($a,$b) use ($search) {
-            $s = mb_strtolower($search);
+            $s = strtolower($search);
             $sa = relevanceScore($a['title'] ?? '', $a['subject'] ?? '', $s);
             $sb = relevanceScore($b['title'] ?? '', $b['subject'] ?? '', $s);
             if ($sa !== $sb) return $sa <=> $sb;
