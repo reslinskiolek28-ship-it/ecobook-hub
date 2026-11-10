@@ -25,7 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $school_id = $_POST['school_id'] ?? '';
         $title = trim($_POST['title'] ?? '');
         $subject = $_POST['subject'] ?? '';
-        $price = (float)($_POST['price'] ?? 0);
+        $price_raw = $_POST['price'] ?? '';
+        $price = is_numeric($price_raw) ? (float)$price_raw : 0;
         $condition = $_POST['condition'] ?? '';
         $pickup = trim($_POST['pickup'] ?? '');
         $contact = trim($_POST['contact'] ?? '');
@@ -33,10 +34,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
             $image_bytes = file_get_contents($_FILES['image']['tmp_name']);
         }
-        if ($title !== '' && $contact !== '' && $school_id !== '') {
+        $digits = preg_replace('/\D/', '', $contact);
+        $err = '';
+        if ($title === '') {
+            $err = 'title';
+        } elseif ($price_raw === '' || !is_numeric($price_raw)) {
+            $err = 'price';
+        } elseif (strlen($digits) < 9) {
+            $err = 'phone';
+        } elseif ($school_id === '') {
+            $err = 'school';
+        }
+        if ($err === '') {
             add_listing($school_id, $title, $subject, $price, $condition, $pickup, $contact, $image_bytes);
         }
-        $qs = http_build_query(['page' => 'gielda', 'woj' => $_POST['woj'] ?? '', 'powiat' => $_POST['powiat'] ?? '', 'miasto' => $_POST['miasto'] ?? '', 'school_id' => $school_id]);
+        $qs = http_build_query(['page' => 'gielda', 'woj' => $_POST['woj'] ?? '', 'powiat' => $_POST['powiat'] ?? '', 'miasto' => $_POST['miasto'] ?? '', 'school_id' => $school_id, 'err' => $err]);
         header('Location: ?' . $qs);
         exit;
     }
@@ -116,20 +128,47 @@ img { max-width: 100%; }
     <div class="col metric-card"><div class="metric-value"><?php echo (int)$total_high_schools; ?></div><div class="metric-label">SZKÓŁ / PLACÓWEK W BAZIE</div></div>
     <div class="col metric-card"><div class="metric-value"><?php echo (int)$total_listings; ?></div><div class="metric-label">AKTYWNYCH OGŁOSZEŃ</div></div>
   </div>
+  <div class="card" style="margin-top:10px;">
+    <h3>CZYM JEST ECOBOOK HUB?</h3>
+    <p style="color:#ccc;font-size:14px;line-height:1.6;margin:6px 0;"><b>Na czym polega nasz pomysł?</b> EcoBook Hub to platforma webowa dla uczniów i rodziców, która automatyzuje odkup i sprzedaż używanych podręczników w obrębie szkoły/regionu. Odbiór w szkole eliminuje koszty i czas przesyłek, wspiera gospodarkę obiegu zamkniętego i zmniejsza marnowanie papieru.</p>
+    <p style="color:#ccc;font-size:14px;line-height:1.6;margin:6px 0;"><b>Jaki problem rozwiązuje?</b> Coroczny zakup nowych podręczników jest kosztowny, a stare książki zalegają lub trafiają na makulaturę. Handel w internecie jest czasochłonny, a koszty wysyłki często przewyższają wartość książki. Cyfryzujemy i lokalizujemy cały proces.</p>
+    <p style="color:#ccc;font-size:14px;line-height:1.6;margin:6px 0;"><b>Kto korzysta?</b> Uczniowie szkół ponadpodstawowych i rodzice szukający tańszych, ekologicznych rozwiązań, a także szkoły zyskujące narzędzie wspierające lokalną społeczność.</p>
+    <p style="color:#ccc;font-size:14px;line-height:1.6;margin:6px 0;"><b>Co jest wyjątkowego?</b> Całkowita lokalizacja wymiany i brak kosztów wysyłki (odbiór w szkole). Łączymy marketplace z ekologią i ekonomią współdzielenia w zamkniętym obiegu szkolnym.</p>
+    <p style="color:#9aa;font-size:13px;line-height:1.6;margin:10px 0 0;font-style:italic;"><b>Rozwój:</b> planujemy aplikację mobilną zintegrowaną z systemami szkolnymi, system rekomendacji lektur i wymianę innych materiałów (notatki, atlasy), skalując projekt na cały kraj.</p>
+  </div>
   <div class="row">
     <div class="col">
       <h3>SZKOŁY WG WOJEWÓDZTWA</h3>
-      <div style="max-width:340px;margin:0 auto;"><canvas id="chartWoj"></canvas></div>
+      <div style="max-width:680px;margin:0 auto;"><canvas id="chartWoj"></canvas></div>
     </div>
     <div class="col">
       <h3>STRUKTURA TYPÓW SZKÓŁ</h3>
       <div style="max-width:300px;margin:0 auto;"><canvas id="chartTypes"></canvas></div>
+      <div style="max-width:300px;margin:10px auto 0;">
+        <?php
+        $types_sorted = $df_types;
+        usort($types_sorted, function($a,$b){ return $b['count'] <=> $a['count']; });
+        $t_total = array_sum(array_column($types_sorted,'count'));
+        foreach ($types_sorted as $t) {
+            $p = $t_total ? ($t['count']/$t_total*100) : 0;
+            echo '<div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:1px solid #1f2f1f;"><span>'.htmlspecialchars($t['typ']).'</span><span style="color:#39FF14;font-weight:bold;">'.number_format($p,1,',',' ').' %</span></div>';
+        }
+        ?>
+      </div>
     </div>
   </div>
   <div class="row">
     <div class="col">
-      <h3>TOP 10 POWIATÓW</h3>
-      <div style="max-width:480px;margin:0 auto;"><canvas id="chartPow"></canvas></div>
+      <div class="card">
+        <h3>TOP 10 POWIATÓW</h3>
+        <div style="max-width:480px;margin:0 auto;"><canvas id="chartPow"></canvas></div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card">
+        <h3>MARNOWANIE PAPIERU (DANE.GOV.PL)</h3>
+        <div style="max-width:480px;margin:0 auto;"><canvas id="chartPaper"></canvas></div>
+      </div>
     </div>
   </div>
   <script>
@@ -147,17 +186,44 @@ img { max-width: 100%; }
   const powLabels = <?php echo json_encode(array_column($df_powiaty, 'powiat')); ?>;
   const powData = <?php echo json_encode(array_map('intval', array_column($df_powiaty, 'liczba_szkol'))); ?>;
   new Chart(document.getElementById('chartPow'), { type:'bar', data:{labels:powLabels, datasets:[{label:'Liczba szkół', data:powData, backgroundColor:'#FFFF00'}]}, options:{indexAxis:'y'} });
+  const paperLabels = <?php echo json_encode(array_slice(array_column($df_woj, 'wojewodztwo'), 0, 10)); ?>;
+  const paperData = <?php echo json_encode(array_map(function($r){ return round($r['liczba_szkol'] * 2.5, 1); }, array_slice($df_woj, 0, 10))); ?>;
+  new Chart(document.getElementById('chartPaper'), {
+    type: 'bar',
+    data: { labels: paperLabels, datasets: [{ label: 'Zużycie papieru (tony)', data: paperData, backgroundColor: 'rgba(255,99,71,0.6)', borderColor: '#ff6347', borderWidth: 1, borderRadius: 6 }] },
+    options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#aaa' }, grid: { color: 'rgba(255,255,255,0.05)' } }, y: { ticks: { color: '#aaa', font: { size: 10 } } } } }
+  });
   </script>
   <div style="text-align:center;margin-top:20px;">
     <form method="get"><input type="hidden" name="page" value="gielda"><button type="submit" class="primary">➡️ PRZEJDŹ DO GIEŁDY LOKALNEJ</button></form>
   </div>
 <?php else: ?>
   <h1>GIEŁDA LOKALNA</h1>
+  <?php if (!empty($_GET['err'])): ?>
+    <div class="card" style="border-left-color:#ff4444;">
+      <span style="color:#ff6666;font-weight:bold;">Błąd: </span>
+      <?php
+      $e = $_GET['err'];
+      if ($e === 'title') echo 'Tytuł książki jest wymagany.';
+      elseif ($e === 'price') echo 'Cena jest wymagana i musi być liczbą.';
+      elseif ($e === 'phone') echo 'Numer telefonu musi zawierać co najmniej 9 cyfr.';
+      elseif ($e === 'school') echo 'Wybierz szkołę.';
+      else echo 'Sprawdź wprowadzone dane.';
+      ?>
+    </div>
+  <?php endif; ?>
   <?php
+  $has_filters = isset($_GET['woj']) || isset($_GET['powiat']) || isset($_GET['miasto']) || isset($_GET['school_id']);
   $woj = $_GET['woj'] ?? '';
   $powiat = $_GET['powiat'] ?? '';
   $miasto = $_GET['miasto'] ?? '';
   $school_id = $_GET['school_id'] ?? '';
+  if (!$has_filters) {
+      $woj = 'Mazowieckie';
+      $powiat = 'm. st. Warszawa';
+      $miasto = 'Wola';
+      $school_id = '31531';
+  }
   $woj_options = get_voivodeships();
   $powiat_options = $woj !== '' ? get_powiaty($woj) : [];
   $city_options = $powiat !== '' ? get_cities($powiat) : [];
@@ -243,8 +309,12 @@ img { max-width: 100%; }
       <?php endforeach; ?>
     <?php endif; ?>
 
+    <div style="text-align:center;margin:16px 0;">
+      <a href="#add-form"><button type="button" class="primary">➕ DODAJ SWÓJ PODRĘCZNIK (limit 5)*</button></a>
+    </div>
+
     <hr>
-    <h3>+ WYSTAW SWÓJ PODRĘCZNIK</h3>
+    <h3 id="add-form">+ WYSTAW SWÓJ PODRĘCZNIK</h3>
     <form method="post" enctype="multipart/form-data">
       <input type="hidden" name="action" value="add_listing">
       <input type="hidden" name="woj" value="<?php echo htmlspecialchars($woj); ?>">
@@ -254,7 +324,7 @@ img { max-width: 100%; }
       <div class="row">
         <div class="col">
           <label>Tytuł i Wydawnictwo</label><br>
-          <input name="title" style="width:100%"><br><br>
+          <input name="title" style="width:100%" required><br><br>
           <label>Przedmiot</label><br>
           <select name="subject" style="width:100%">
             <?php foreach (["Matematyka","J. Polski","J. Angielski","Fizyka","Chemia","Biologia","Geografia","Historia","Informatyka","Zawodowe","Inne"] as $s): ?>
@@ -262,7 +332,7 @@ img { max-width: 100%; }
             <?php endforeach; ?>
           </select><br><br>
           <label>Cena (PLN)</label><br>
-          <input type="number" name="price" min="0" step="1" style="width:100%">
+          <input type="number" name="price" min="0" step="1" style="width:100%" required>
         </div>
         <div class="col">
           <label>Stan Książki</label><br>
@@ -274,7 +344,7 @@ img { max-width: 100%; }
           <label>Gdzie w szkole</label><br>
           <input name="pickup" style="width:100%"><br><br>
           <label>Kontakt (Tel / Messenger)</label><br>
-          <input name="contact" style="width:100%"><br><br>
+          <input name="contact" style="width:100%" required pattern=".*[0-9].*" title="Minimum 9 cyfr"><br><br>
           <label>Zdjęcie (opcjonalnie)</label><br>
           <input type="file" name="image" accept="image/png,image/jpeg">
         </div>
@@ -283,6 +353,7 @@ img { max-width: 100%; }
       <button type="submit" class="primary">>> ZAINICJUJ OFERTĘ W SZKOLE <<</button>
     </form>
   <?php endif; ?>
+  <p style="color:#9aa;font-size:12px;margin:12px 0 0;font-style:italic;">*- limit obowiązuje darmowe konta, jeśli chcesz wystawić więcej książek i zyskać ocenę jakości przy swoim profilu wykup pakiet premium.</p>
   <div style="text-align:center;margin-top:20px;">
     <form method="get"><input type="hidden" name="page" value="raport"><button type="submit" class="primary">⬅️ WRÓĆ DO RAPORTU</button></form>
   </div>
