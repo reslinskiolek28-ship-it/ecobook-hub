@@ -64,9 +64,20 @@ function get_schools(string $miasto): array {
     return $st->fetchAll(PDO::FETCH_NUM);
 }
 
-function get_school_listings($school_id): array {
-    $st = db()->prepare("SELECT id, title, subject, price_pln, condition, pickup_location, contact_info, image_bytes, created_at, status, klasa FROM listings WHERE school_id = ? AND status = 'active' ORDER BY created_at DESC");
-    $st->execute([$school_id]);
+function get_school_listings($school_id, $search = ''): array {
+    $pdo = db();
+    $sql = "SELECT id, title, subject, price_pln, condition, pickup_location, contact_info, image_bytes, created_at, status, klasa FROM listings WHERE school_id = ? AND status = 'active'";
+    $params = [$school_id];
+    if ($search !== '') {
+        $sql .= " AND (title LIKE ? OR subject LIKE ? OR CAST(klasa AS TEXT) LIKE ?)";
+        $like = "%" . $search . "%";
+        $params[] = $like;
+        $params[] = $like;
+        $params[] = $like;
+    }
+    $sql .= " ORDER BY created_at DESC";
+    $st = $pdo->prepare($sql);
+    $st->execute($params);
     return $st->fetchAll();
 }
 

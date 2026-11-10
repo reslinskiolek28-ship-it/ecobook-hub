@@ -52,19 +52,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($err === '') {
             add_listing($school_id, $title, $subject, $price, $condition, $pickup, $contact, $image_bytes, $klasa);
         }
-        $qs = http_build_query(['page' => 'gielda', 'woj' => $_POST['woj'] ?? '', 'powiat' => $_POST['powiat'] ?? '', 'miasto' => $_POST['miasto'] ?? '', 'school_id' => $school_id, 'err' => $err]);
+        $qs = http_build_query(['page' => 'gielda', 'woj' => $_POST['woj'] ?? '', 'powiat' => $_POST['powiat'] ?? '', 'miasto' => $_POST['miasto'] ?? '', 'school_id' => $school_id, 'err' => $err, 'search' => $_POST['search'] ?? '']);
         header('Location: ?' . $qs);
         exit;
     }
     if ($action === 'sold') {
         mark_listing_sold((int)($_POST['id'] ?? 0));
-        $qs = http_build_query(['page' => 'gielda', 'woj' => $_POST['woj'] ?? '', 'powiat' => $_POST['powiat'] ?? '', 'miasto' => $_POST['miasto'] ?? '', 'school_id' => $_POST['school_id'] ?? '']);
+        $qs = http_build_query(['page' => 'gielda', 'woj' => $_POST['woj'] ?? '', 'powiat' => $_POST['powiat'] ?? '', 'miasto' => $_POST['miasto'] ?? '', 'school_id' => $_POST['school_id'] ?? '', 'search' => $_POST['search'] ?? '']);
         header('Location: ?' . $qs);
         exit;
     }
     if ($action === 'delete') {
         delete_listing((int)($_POST['id'] ?? 0));
-        $qs = http_build_query(['page' => 'gielda', 'woj' => $_POST['woj'] ?? '', 'powiat' => $_POST['powiat'] ?? '', 'miasto' => $_POST['miasto'] ?? '', 'school_id' => $_POST['school_id'] ?? '']);
+        $qs = http_build_query(['page' => 'gielda', 'woj' => $_POST['woj'] ?? '', 'powiat' => $_POST['powiat'] ?? '', 'miasto' => $_POST['miasto'] ?? '', 'school_id' => $_POST['school_id'] ?? '', 'search' => $_POST['search'] ?? '']);
         header('Location: ?' . $qs);
         exit;
     }
@@ -252,6 +252,7 @@ img { max-width: 100%; }
   $school_options = $miasto !== '' ? get_schools($miasto) : [];
   $view = $_GET['view'] ?? 'list';
   $sort = $_GET['sort'] ?? 'created';
+  $search = $_GET['search'] ?? '';
   ?>
   <form method="get">
     <input type="hidden" name="page" value="gielda">
@@ -295,8 +296,25 @@ img { max-width: 100%; }
     </div>
   </form>
   <hr>
+  <div class="card" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+    <label style="font-size:14px;color:#aaa;margin:0;">🔍 Szukaj podręcznika (tytuł, przedmiot, klasa):</label>
+    <form method="get" style="display:flex;gap:8px;align-items:center;margin:0;">
+      <input type="hidden" name="page" value="gielda">
+      <input type="hidden" name="woj" value="<?php echo htmlspecialchars($woj); ?>">
+      <input type="hidden" name="powiat" value="<?php echo htmlspecialchars($powiat); ?>">
+      <input type="hidden" name="miasto" value="<?php echo htmlspecialchars($miasto); ?>">
+      <input type="hidden" name="school_id" value="<?php echo htmlspecialchars($school_id); ?>">
+      <input type="hidden" name="view" value="list">
+      <input type="hidden" name="sort" value="<?php echo htmlspecialchars($sort); ?>">
+      <input name="search" style="width:260px;padding:8px;border-radius:8px;border:1px solid #2a3a2a;background:#151a15;color:#fff;" value="<?php echo htmlspecialchars($search); ?>" placeholder="wpisz słowo kluczowe...">
+      <button type="submit" class="primary" style="padding:8px 14px;">Szukaj</button>
+      <?php if ($search !== ''): ?>
+        <a href="?<?php echo http_build_query(['page'=>'gielda','woj'=>$woj,'powiat'=>$powiat,'miasto'=>$miasto,'school_id'=>$school_id,'view'=>'list','sort'=>$sort]); ?>" style="color:#39FF14;text-decoration:underline;font-size:13px;">Wyczyść</a>
+      <?php endif; ?>
+    </form>
+  </div>
   <?php if ($school_id !== ''): ?>
-    <?php $listings = get_school_listings($school_id); ?>
+    <?php $listings = get_school_listings($school_id, $search); ?>
     <?php
     if ($sort === 'title') usort($listings, function($a,$b){ return strcmp($a['title'] ?? '', $b['title'] ?? ''); });
     elseif ($sort === 'subject') usort($listings, function($a,$b){ return strcmp($a['subject'] ?? '', $b['subject'] ?? ''); });
@@ -312,6 +330,7 @@ img { max-width: 100%; }
         <input type="hidden" name="miasto" value="<?php echo htmlspecialchars($miasto); ?>">
         <input type="hidden" name="school_id" value="<?php echo htmlspecialchars($school_id); ?>">
         <input type="hidden" name="view" value="list">
+        <input type="hidden" name="search" value="<?php echo htmlspecialchars($search); ?>">
         <label style="font-size:13px;">Sortuj:</label>
         <select name="sort" onchange="this.form.submit()">
           <option value="created" <?php echo $sort==='created'?'selected':''; ?>>Najnowsze</option>
@@ -358,12 +377,12 @@ img { max-width: 100%; }
 
 
     <div style="text-align:center;margin:16px 0;">
-      <a href="?<?php echo http_build_query(['page'=>'gielda','woj'=>$woj,'powiat'=>$powiat,'miasto'=>$miasto,'school_id'=>$school_id,'view'=>'add','sort'=>$sort]); ?>"><button type="button" class="primary">➕ DODAJ SWÓJ PODRĘCZNIK (limit 5)*</button></a>
+      <a href="?<?php echo http_build_query(['page'=>'gielda','woj'=>$woj,'powiat'=>$powiat,'miasto'=>$miasto,'school_id'=>$school_id,'view'=>'add','sort'=>$sort,'search'=>$search]); ?>"><button type="button" class="primary">➕ DODAJ SWÓJ PODRĘCZNIK (limit 5)*</button></a>
     </div>
 
     <?php else: ?>
     <div style="text-align:center;margin:16px 0;">
-      <a href="?<?php echo http_build_query(['page'=>'gielda','woj'=>$woj,'powiat'=>$powiat,'miasto'=>$miasto,'school_id'=>$school_id,'view'=>'list','sort'=>$sort]); ?>"><button type="button" class="primary">⬅️ ZOBACZ AKTUALNE OFERTY</button></a>
+      <a href="?<?php echo http_build_query(['page'=>'gielda','woj'=>$woj,'powiat'=>$powiat,'miasto'=>$miasto,'school_id'=>$school_id,'view'=>'list','sort'=>$sort,'search'=>$search]); ?>"><button type="button" class="primary">⬅️ ZOBACZ AKTUALNE OFERTY</button></a>
     </div>
     <hr>
     <h3 id="add-form">+ WYSTAW SWÓJ PODRĘCZNIK</h3>
@@ -373,6 +392,7 @@ img { max-width: 100%; }
       <input type="hidden" name="powiat" value="<?php echo htmlspecialchars($powiat); ?>">
       <input type="hidden" name="miasto" value="<?php echo htmlspecialchars($miasto); ?>">
       <input type="hidden" name="school_id" value="<?php echo htmlspecialchars($school_id); ?>">
+      <input type="hidden" name="search" value="<?php echo htmlspecialchars($search); ?>">
       <div class="row">
         <div class="col">
           <label>Tytuł i Wydawnictwo</label><br>
