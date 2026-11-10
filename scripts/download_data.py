@@ -64,6 +64,7 @@ def fetch_dane_gov_pl():
             pickup_location TEXT,
             contact_info TEXT,
             image_bytes BLOB,
+            klasa INTEGER,
             status TEXT DEFAULT 'active',
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
@@ -121,3 +122,5 @@ def normalize_wojewodztwo(value):
 
 if __name__ == '__main__':
     fetch_dane_gov_pl()
+
+

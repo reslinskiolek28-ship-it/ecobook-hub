@@ -65,7 +65,7 @@ function get_schools(string $miasto): array {
 }
 
 function get_school_listings($school_id): array {
-    $st = db()->prepare("SELECT id, title, subject, price_pln, condition, pickup_location, contact_info, image_bytes, created_at, status FROM listings WHERE school_id = ? AND status = 'active' ORDER BY created_at DESC");
+    $st = db()->prepare("SELECT id, title, subject, price_pln, condition, pickup_location, contact_info, image_bytes, created_at, status, klasa FROM listings WHERE school_id = ? AND status = 'active' ORDER BY created_at DESC");
     $st->execute([$school_id]);
     return $st->fetchAll();
 }
@@ -80,9 +80,9 @@ function delete_listing($id): void {
     $st->execute([$id]);
 }
 
-function add_listing($school_id, $title, $subject, $price, $condition, $pickup, $contact, $image_bytes): void {
+function add_listing($school_id, $title, $subject, $price, $condition, $pickup, $contact, $image_bytes, $klasa = null): void {
     $pdo = db();
-    $st = $pdo->prepare("INSERT INTO listings (id, school_id, title, subject, price_pln, condition, pickup_location, contact_info, image_bytes) VALUES ((SELECT COALESCE(MAX(id), 0) + 1 FROM listings), :school_id, :title, :subject, :price, :condition, :pickup, :contact, :image)");
+    $st = $pdo->prepare("INSERT INTO listings (id, school_id, title, subject, price_pln, condition, pickup_location, contact_info, image_bytes, klasa) VALUES ((SELECT COALESCE(MAX(id), 0) + 1 FROM listings), :school_id, :title, :subject, :price, :condition, :pickup, :contact, :image, :klasa)");
     $st->bindValue(':school_id', $school_id);
     $st->bindValue(':title', $title);
     $st->bindValue(':subject', $subject);
@@ -94,6 +94,11 @@ function add_listing($school_id, $title, $subject, $price, $condition, $pickup, 
         $st->bindValue(':image', null, PDO::PARAM_NULL);
     } else {
         $st->bindValue(':image', $image_bytes, PDO::PARAM_LOB);
+    }
+    if ($klasa === null || $klasa === '') {
+        $st->bindValue(':klasa', null, PDO::PARAM_NULL);
+    } else {
+        $st->bindValue(':klasa', (int)$klasa, PDO::PARAM_INT);
     }
     $st->execute();
 }

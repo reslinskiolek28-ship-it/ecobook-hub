@@ -27,6 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $subject = $_POST['subject'] ?? '';
         $price_raw = $_POST['price'] ?? '';
         $price = is_numeric($price_raw) ? (float)$price_raw : 0;
+        $klasa_raw = $_POST['klasa'] ?? '';
+        $klasa = ($klasa_raw === '' ? null : (int)$klasa_raw);
         $condition = $_POST['condition'] ?? '';
         $pickup = trim($_POST['pickup'] ?? '');
         $contact = trim($_POST['contact'] ?? '');
@@ -40,13 +42,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $err = 'title';
         } elseif ($price_raw === '' || !is_numeric($price_raw)) {
             $err = 'price';
+        } elseif ($klasa_raw !== '' && ($klasa < 1 || $klasa > 5)) {
+            $err = 'klasa';
         } elseif (strlen($digits) < 9) {
             $err = 'phone';
         } elseif ($school_id === '') {
             $err = 'school';
         }
         if ($err === '') {
-            add_listing($school_id, $title, $subject, $price, $condition, $pickup, $contact, $image_bytes);
+            add_listing($school_id, $title, $subject, $price, $condition, $pickup, $contact, $image_bytes, $klasa);
         }
         $qs = http_build_query(['page' => 'gielda', 'woj' => $_POST['woj'] ?? '', 'powiat' => $_POST['powiat'] ?? '', 'miasto' => $_POST['miasto'] ?? '', 'school_id' => $school_id, 'err' => $err]);
         header('Location: ?' . $qs);
@@ -128,13 +132,30 @@ img { max-width: 100%; }
     <div class="col metric-card"><div class="metric-value"><?php echo (int)$total_high_schools; ?></div><div class="metric-label">SZKÓŁ / PLACÓWEK W BAZIE</div></div>
     <div class="col metric-card"><div class="metric-value"><?php echo (int)$total_listings; ?></div><div class="metric-label">AKTYWNYCH OGŁOSZEŃ</div></div>
   </div>
-  <div class="card" style="margin-top:10px;">
-    <h3>CZYM JEST ECOBOOK HUB?</h3>
-    <p style="color:#ccc;font-size:14px;line-height:1.6;margin:6px 0;"><b>Na czym polega nasz pomysł?</b> EcoBook Hub to platforma webowa dla uczniów i rodziców, która automatyzuje odkup i sprzedaż używanych podręczników w obrębie szkoły/regionu. Odbiór w szkole eliminuje koszty i czas przesyłek, wspiera gospodarkę obiegu zamkniętego i zmniejsza marnowanie papieru.</p>
-    <p style="color:#ccc;font-size:14px;line-height:1.6;margin:6px 0;"><b>Jaki problem rozwiązuje?</b> Coroczny zakup nowych podręczników jest kosztowny, a stare książki zalegają lub trafiają na makulaturę. Handel w internecie jest czasochłonny, a koszty wysyłki często przewyższają wartość książki. Cyfryzujemy i lokalizujemy cały proces.</p>
-    <p style="color:#ccc;font-size:14px;line-height:1.6;margin:6px 0;"><b>Kto korzysta?</b> Uczniowie szkół ponadpodstawowych i rodzice szukający tańszych, ekologicznych rozwiązań, a także szkoły zyskujące narzędzie wspierające lokalną społeczność.</p>
-    <p style="color:#ccc;font-size:14px;line-height:1.6;margin:6px 0;"><b>Co jest wyjątkowego?</b> Całkowita lokalizacja wymiany i brak kosztów wysyłki (odbiór w szkole). Łączymy marketplace z ekologią i ekonomią współdzielenia w zamkniętym obiegu szkolnym.</p>
-    <p style="color:#9aa;font-size:13px;line-height:1.6;margin:10px 0 0;font-style:italic;"><b>Rozwój:</b> planujemy aplikację mobilną zintegrowaną z systemami szkolnymi, system rekomendacji lektur i wymianę innych materiałów (notatki, atlasy), skalując projekt na cały kraj.</p>
+  <div class="card" style="margin-top:10px;padding:24px;">
+    <h2 style="font-size:24px;margin-bottom:16px;">CZYM JEST ECOBOOK HUB?</h2>
+    <div style="display:grid;grid-template-columns:1fr;gap:14px;">
+      <div>
+        <h3 style="font-size:18px;margin-bottom:4px;">Na czym polega nasz pomysł?</h3>
+        <p style="color:#ddd;font-size:16px;line-height:1.7;margin:0;">EcoBook Hub to innowacyjna platforma webowa stworzona z myślą o uczniach i rodzicach, którzy co roku zmagają się z problemem wysokich kosztów zakupu podręczników. System ten całkowicie automatyzuje proces odkupowania i sprzedawania używanych książek szkolnych w obrębie jednej placówki lub regionu. Dzięki funkcji „odbioru w szkole” platforma całkowicie eliminuje koszty oraz czasochłonność tradycyjnych przesyłek kurierskich. Projekt aktywnie wspiera gospodarki obiegu zamkniętego, zmniejszając ilość marnowanego papieru i promowanie ekologicznych postaw wśród młodzieży.</p>
+      </div>
+      <div>
+        <h3 style="font-size:18px;margin-bottom:4px;">Jaki problem lub potrzebę rozwiązuje nasz pomysł?</h3>
+        <p style="color:#ddd;font-size:16px;line-height:1.7;margin:0;">Coroczny zakup nowych podręczników szkolnych generuje bardzo wysokie koszty dla domowych budżetów, a stare książki często zalegają w domach lub trafiają na makulaturę. Ponadto tradycyjne handlowanie używanymi książkami w internecie jest czasochłonne, a wysokie koszty przesyłek kurierskich często przewyższają wartość samych podręczników. Nasz pomysł rozwiązuje te problemy poprzez cyfryzację i lokalizację całego procesu, oferując szybką wymianę książek bezpośrednio w szkole.</p>
+      </div>
+      <div>
+        <h3 style="font-size:18px;margin-bottom:4px;">Kto będzie korzystać z naszego rozwiązania?</h3>
+        <p style="color:#ddd;font-size:16px;line-height:1.7;margin:0;">Z głównego rozwiązania będą korzystać uczniowie szkół ponadpodstawowych oraz ich rodzice, którzy poszukują tańszych i ekologicznych sposobów na zdobycie wymaganych książek. Dodatkowo z platformy skorzystają same szkoły, zyskując sprawne narzędzie wspierające lokalną społeczność i promocję idei ekologicznych.</p>
+      </div>
+      <div>
+        <h3 style="font-size:18px;margin-bottom:4px;">Co jest nowego lub wyjątkowego w naszym pomyśle?</h3>
+        <p style="color:#ddd;font-size:16px;line-height:1.7;margin:0;">Wyjątkowość naszego projektu polega na całkowitej lokalizacji całego procesu wymiany i eliminacji kosztów wysyłki dzięki opcji odbioru książek bezpośrednio na terenie szkoły. Ponadto łączymy funkcję tradycyjnego marketplace'u z elementami ekologii i ekonomii współdzielenia, tworząc zamknięty, bezpieczny obieg podręczników dla szkolnej społeczności.</p>
+      </div>
+      <div style="background:#0e130e;border:1px solid #1f2f1f;border-radius:10px;padding:14px;">
+        <h3 style="font-size:18px;margin-bottom:4px;">W jakim kierunku chcemy się rozwijać?</h3>
+        <p style="color:#9aa;font-size:15px;line-height:1.7;margin:0;font-style:italic;">W perspektywie długoterminowej planujemy przekształcić platformę w pełni funkcjonalną aplikację mobilną zintegrowaną z systemami szkolnymi, co ułatwi uczniom szybki handel książkami za pomocą kilku kliknięć. W przyszłości zamierzamy także rozbudować serwis o automatyczny system rekomendacji lektur oraz moduł wymiany innych materiałów edukacyjnych, takich jak notatki czy atlasy. Dzięki temu projekt zyska ogólnokrajową skalę, realnie wspierając ekologię i oszczędności w tysiącach szkół w całej Polsce.</p>
+      </div>
+    </div>
   </div>
   <div class="row">
     <div class="col">
@@ -207,6 +228,7 @@ img { max-width: 100%; }
       if ($e === 'title') echo 'Tytuł książki jest wymagany.';
       elseif ($e === 'price') echo 'Cena jest wymagana i musi być liczbą.';
       elseif ($e === 'phone') echo 'Numer telefonu musi zawierać co najmniej 9 cyfr.';
+      elseif ($e === 'klasa') echo 'Klasa musi być liczbą od 1 do 5.';
       elseif ($e === 'school') echo 'Wybierz szkołę.';
       else echo 'Sprawdź wprowadzone dane.';
       ?>
@@ -228,6 +250,8 @@ img { max-width: 100%; }
   $powiat_options = $woj !== '' ? get_powiaty($woj) : [];
   $city_options = $powiat !== '' ? get_cities($powiat) : [];
   $school_options = $miasto !== '' ? get_schools($miasto) : [];
+  $view = $_GET['view'] ?? 'list';
+  $sort = $_GET['sort'] ?? 'created';
   ?>
   <form method="get">
     <input type="hidden" name="page" value="gielda">
@@ -273,7 +297,30 @@ img { max-width: 100%; }
   <hr>
   <?php if ($school_id !== ''): ?>
     <?php $listings = get_school_listings($school_id); ?>
-    <h3>OFERTY W SZKOLE</h3>
+    <?php
+    if ($sort === 'title') usort($listings, function($a,$b){ return strcmp($a['title'] ?? '', $b['title'] ?? ''); });
+    elseif ($sort === 'subject') usort($listings, function($a,$b){ return strcmp($a['subject'] ?? '', $b['subject'] ?? ''); });
+    elseif ($sort === 'klasa') usort($listings, function($a,$b){ return ($a['klasa'] ?? 0) <=> ($b['klasa'] ?? 0); });
+    ?>
+    <?php if ($view !== 'add'): ?>
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:10px;">
+      <h3 style="margin:0;">OFERTY W SZKOLE</h3>
+      <form method="get" style="display:flex;gap:8px;align-items:center;">
+        <input type="hidden" name="page" value="gielda">
+        <input type="hidden" name="woj" value="<?php echo htmlspecialchars($woj); ?>">
+        <input type="hidden" name="powiat" value="<?php echo htmlspecialchars($powiat); ?>">
+        <input type="hidden" name="miasto" value="<?php echo htmlspecialchars($miasto); ?>">
+        <input type="hidden" name="school_id" value="<?php echo htmlspecialchars($school_id); ?>">
+        <input type="hidden" name="view" value="list">
+        <label style="font-size:13px;">Sortuj:</label>
+        <select name="sort" onchange="this.form.submit()">
+          <option value="created" <?php echo $sort==='created'?'selected':''; ?>>Najnowsze</option>
+          <option value="title" <?php echo $sort==='title'?'selected':''; ?>>Nazwa</option>
+          <option value="subject" <?php echo $sort==='subject'?'selected':''; ?>>Przedmiot</option>
+          <option value="klasa" <?php echo $sort==='klasa'?'selected':''; ?>>Klasa</option>
+        </select>
+      </form>
+    </div>
     <?php if (empty($listings)): ?>
       <p>BAZA PUSTA. Brak aktywnych ofert na terenie tej placówki. Dodaj pierwszą książkę!</p>
     <?php else: ?>
@@ -309,10 +356,15 @@ img { max-width: 100%; }
       <?php endforeach; ?>
     <?php endif; ?>
 
+
     <div style="text-align:center;margin:16px 0;">
-      <a href="#add-form"><button type="button" class="primary">➕ DODAJ SWÓJ PODRĘCZNIK (limit 5)*</button></a>
+      <a href="?<?php echo http_build_query(['page'=>'gielda','woj'=>$woj,'powiat'=>$powiat,'miasto'=>$miasto,'school_id'=>$school_id,'view'=>'add','sort'=>$sort]); ?>"><button type="button" class="primary">➕ DODAJ SWÓJ PODRĘCZNIK (limit 5)*</button></a>
     </div>
 
+    <?php else: ?>
+    <div style="text-align:center;margin:16px 0;">
+      <a href="?<?php echo http_build_query(['page'=>'gielda','woj'=>$woj,'powiat'=>$powiat,'miasto'=>$miasto,'school_id'=>$school_id,'view'=>'list','sort'=>$sort]); ?>"><button type="button" class="primary">⬅️ ZOBACZ AKTUALNE OFERTY</button></a>
+    </div>
     <hr>
     <h3 id="add-form">+ WYSTAW SWÓJ PODRĘCZNIK</h3>
     <form method="post" enctype="multipart/form-data">
@@ -331,6 +383,8 @@ img { max-width: 100%; }
               <option><?php echo $s; ?></option>
             <?php endforeach; ?>
           </select><br><br>
+          <label>Klasa (1-5)</label><br>
+          <input type="number" name="klasa" min="1" max="5" style="width:100%"><br><br>
           <label>Cena (PLN)</label><br>
           <input type="number" name="price" min="0" step="1" style="width:100%" required>
         </div>
@@ -357,6 +411,7 @@ img { max-width: 100%; }
   <div style="text-align:center;margin-top:20px;">
     <form method="get"><input type="hidden" name="page" value="raport"><button type="submit" class="primary">⬅️ WRÓĆ DO RAPORTU</button></form>
   </div>
+<?php endif; ?>
 <?php endif; ?>
 </body>
 </html>
