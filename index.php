@@ -296,29 +296,37 @@ img { max-width: 100%; }
     </div>
   </form>
   <hr>
-  <div class="card" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-    <label style="font-size:14px;color:#aaa;margin:0;">🔍 Szukaj podręcznika (tytuł, przedmiot, klasa):</label>
-    <form method="get" style="display:flex;gap:8px;align-items:center;margin:0;">
-      <input type="hidden" name="page" value="gielda">
-      <input type="hidden" name="woj" value="<?php echo htmlspecialchars($woj); ?>">
-      <input type="hidden" name="powiat" value="<?php echo htmlspecialchars($powiat); ?>">
-      <input type="hidden" name="miasto" value="<?php echo htmlspecialchars($miasto); ?>">
-      <input type="hidden" name="school_id" value="<?php echo htmlspecialchars($school_id); ?>">
-      <input type="hidden" name="view" value="list">
-      <input type="hidden" name="sort" value="<?php echo htmlspecialchars($sort); ?>">
-      <input name="search" style="width:260px;padding:8px;border-radius:8px;border:1px solid #2a3a2a;background:#151a15;color:#fff;" value="<?php echo htmlspecialchars($search); ?>" placeholder="wpisz słowo kluczowe...">
-      <button type="submit" class="primary" style="padding:8px 14px;">Szukaj</button>
-      <?php if ($search !== ''): ?>
-        <a href="?<?php echo http_build_query(['page'=>'gielda','woj'=>$woj,'powiat'=>$powiat,'miasto'=>$miasto,'school_id'=>$school_id,'view'=>'list','sort'=>$sort]); ?>" style="color:#39FF14;text-decoration:underline;font-size:13px;">Wyczyść</a>
-      <?php endif; ?>
-    </form>
-  </div>
   <?php if ($school_id !== ''): ?>
     <?php $listings = get_school_listings($school_id, $search); ?>
     <?php
     if ($sort === 'title') usort($listings, function($a,$b){ return strcmp($a['title'] ?? '', $b['title'] ?? ''); });
     elseif ($sort === 'subject') usort($listings, function($a,$b){ return strcmp($a['subject'] ?? '', $b['subject'] ?? ''); });
     elseif ($sort === 'klasa') usort($listings, function($a,$b){ return ($a['klasa'] ?? 0) <=> ($b['klasa'] ?? 0); });
+    ?>
+
+    <?php
+    function relevanceScore($title, $subject, $s) {
+        $t = mb_strtolower($title);
+        $sub = mb_strtolower($subject);
+        if ($t === $s) return 0;
+        $pt = mb_strpos($t, $s);
+        $ps = mb_strpos($sub, $s);
+        if ($pt === 0) return 1;
+        if ($ps === 0) return 100;
+        if ($pt !== false) return 10 + $pt;
+        if ($ps !== false) return 200 + $ps;
+        return 999;
+    }
+
+    if ($search !== '') {
+        usort($listings, function($a,$b) use ($search) {
+            $s = mb_strtolower($search);
+            $sa = relevanceScore($a['title'] ?? '', $a['subject'] ?? '', $s);
+            $sb = relevanceScore($b['title'] ?? '', $b['subject'] ?? '', $s);
+            if ($sa !== $sb) return $sa <=> $sb;
+            return strcmp($a['title'] ?? '', $b['title'] ?? '');
+        });
+    }
     ?>
     <?php if ($view !== 'add'): ?>
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:10px;">
@@ -338,6 +346,23 @@ img { max-width: 100%; }
           <option value="subject" <?php echo $sort==='subject'?'selected':''; ?>>Przedmiot</option>
           <option value="klasa" <?php echo $sort==='klasa'?'selected':''; ?>>Klasa</option>
         </select>
+      </form>
+    </div>
+    <div class="card" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px;">
+      <label style="font-size:14px;color:#aaa;margin:0;">🔍 Szukaj podręcznika (tytuł, przedmiot, klasa):</label>
+      <form method="get" style="display:flex;gap:8px;align-items:center;margin:0;">
+        <input type="hidden" name="page" value="gielda">
+        <input type="hidden" name="woj" value="<?php echo htmlspecialchars($woj); ?>">
+        <input type="hidden" name="powiat" value="<?php echo htmlspecialchars($powiat); ?>">
+        <input type="hidden" name="miasto" value="<?php echo htmlspecialchars($miasto); ?>">
+        <input type="hidden" name="school_id" value="<?php echo htmlspecialchars($school_id); ?>">
+        <input type="hidden" name="view" value="list">
+        <input type="hidden" name="sort" value="<?php echo htmlspecialchars($sort); ?>">
+        <input name="search" style="width:260px;padding:8px;border-radius:8px;border:1px solid #2a3a2a;background:#151a15;color:#fff;" value="<?php echo htmlspecialchars($search); ?>" placeholder="wpisz słowo kluczowe...">
+        <button type="submit" class="primary" style="padding:8px 14px;">Szukaj</button>
+        <?php if ($search !== ''): ?>
+          <a href="?<?php echo http_build_query(['page'=>'gielda','woj'=>$woj,'powiat'=>$powiat,'miasto'=>$miasto,'school_id'=>$school_id,'view'=>'list','sort'=>$sort]); ?>" style="color:#39FF14;text-decoration:underline;font-size:13px;">Wyczyść</a>
+        <?php endif; ?>
       </form>
     </div>
     <?php if (empty($listings)): ?>
